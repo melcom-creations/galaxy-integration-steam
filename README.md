@@ -1,4 +1,3 @@
-````markdown
 # 🚂 Steam Integration Plugin for GOG Galaxy 2.1+ (64-bit)
 
 This repository contains the Steam integration plugin for the 64-bit version of GOG Galaxy 2.1+.
@@ -9,42 +8,63 @@ The original community integration has been updated to work with the current 64-
 
 ## ✨ Features
 
-- Compatible with GOG Galaxy 2.1+ (64-bit)
-- Python 3.13 support
-- Updated 64-bit dependencies
-- Improved stability and compatibility
-- Ongoing maintenance and bug fixes
+* Compatible with GOG Galaxy 2.1+ (64-bit)
+* Python 3.13 support
+* Updated 64-bit dependencies
+* Improved stability and compatibility
+* Ongoing maintenance and bug fixes
 
 ---
 
 ## 📦 Installation
 
+### Standard Installation (Recommended)
+
 1. Close GOG Galaxy completely.
 2. Download the latest release from this repository.
-3. Open the following directory:
+3. Open the following folder:
 
-   ```text
-   %localappdata%\GOG.com\Galaxy\plugins\installed\
-   ```
+```text
+%localappdata%\GOG.com\Galaxy\plugins\installed\
+```
 
-4. Extract the downloaded ZIP file directly into this directory.
+4. Extract the ZIP archive **directly into this folder**.
 
-   **After extraction, the folder structure must look exactly like this:**
+After extraction, the directory structure **must** look like this:
 
-   ```text
-   %localappdata%\GOG.com\Galaxy\plugins\installed\
-   └── steam_ca27391f-2675-49b1-92c0-896d43afa4f8
-   ```
+```text
+%localappdata%\GOG.com\Galaxy\plugins\installed\
+└── steam_ca27391f-2675-49b1-92c0-896d43afa4f8\
+    ├── manifest.json
+    ├── plugin.py
+    ├── README.md
+    └── ...
+```
 
-5. If the folder `steam_ca27391f-2675-49b1-92c0-896d43afa4f8` is **not** included in the ZIP archive for any reason, create it manually inside:
+5. Start GOG Galaxy.
 
-   ```text
-   %localappdata%\GOG.com\Galaxy\plugins\installed\
-   ```
+### If the plugin folder is missing
 
-   and extract the contents of the ZIP archive into that folder.
+If the ZIP archive does **not** already contain the folder
 
-6. Start GOG Galaxy.
+```text
+steam_ca27391f-2675-49b1-92c0-896d43afa4f8
+```
+
+create the folder manually inside
+
+```text
+%localappdata%\GOG.com\Galaxy\plugins\installed\
+```
+
+and extract the contents of the ZIP archive into it.
+
+The final directory structure must be:
+
+```text
+%localappdata%\GOG.com\Galaxy\plugins\installed\
+└── steam_ca27391f-2675-49b1-92c0-896d43afa4f8\
+```
 
 ---
 
@@ -54,60 +74,60 @@ If the plugin behaves unexpectedly after an update, resetting the local plugin d
 
 1. Open:
 
-   ```text
-   C:\ProgramData\GOG.com\Galaxy\storage\plugins\
-   ```
+```text
+C:\ProgramData\GOG.com\Galaxy\storage\plugins\
+```
 
 2. Locate all files beginning with:
 
-   ```text
-   steam_
-   ```
+```text
+steam_
+```
 
-   and ending with:
+and ending with:
 
-   ```text
-   -storage.db
-   ```
+```text
+-storage.db
+```
 
-3. Rename each file by adding `.old` to the filename.
+3. Rename each database by appending `.old` to its filename.
 
-   **Example:**
+Example:
 
-   ```text
-   steam_123456-storage.db
-   ```
+```text
+steam_xxxxxxxxx-storage.db
+```
 
-   becomes
+becomes
 
-   ```text
-   steam_123456-storage.db.old
-   ```
+```text
+steam_xxxxxxxxx-storage.db.old
+```
 
-4. Restart GOG Galaxy.
-5. Reconnect the Steam integration.
+4. Start GOG Galaxy again.
+5. Reconnect the Steam integration if necessary.
 
 ---
 
 ## ⚠️ Important
 
-Do not keep backup copies of this plugin inside the `plugins\installed` directory.
+Do **not** place backup copies of this plugin inside the `plugins\installed` directory.
 
-GOG Galaxy scans every plugin folder during startup. Duplicate plugin folders may lead to GUID conflicts or cause Galaxy to load an outdated version of the plugin.
+GOG Galaxy scans every folder inside this directory during startup. Duplicate plugin folders may lead to GUID conflicts or cause Galaxy to load an outdated version of the plugin.
 
 ---
 
 ## 🙏 Credits
 
-**Original Community Integration**  
-Friends of Galaxy  
+**Original Community Integration**
+Friends of Galaxy
 https://github.com/FriendsOfGalaxy/galaxy-integration-steam
 
-**Authorization Flow**  
-ABaumher  
+**Authorization Flow**
+ABaumher
 https://github.com/gogcom/galaxy-integrations-steam/pull/171
 
-**64-bit Port, Maintenance and Improvements**  
+**64-bit Port, Maintenance and Improvements**
 melcom
 
 ---
@@ -116,14 +136,14 @@ melcom
 
 This integration is based on and inspired by several open-source projects and community resources.
 
-- https://github.com/SteamRE/SteamKit
-- https://github.com/ValuePython/steam
-- https://github.com/prncc/steam-scraper
-- https://github.com/rhaarm/steam-scraper
-- https://github.com/mulhod/steam_reviews
-- https://github.com/summersb92/aeolipile
-- https://github.com/rcpoison/steam-scraper
-- https://github.com/chmccc/steam-scraper
+* https://github.com/SteamRE/SteamKit
+* https://github.com/ValuePython/steam
+* https://github.com/prncc/steam-scraper
+* https://github.com/rhaarm/steam-scraper
+* https://github.com/mulhod/steam_reviews
+* https://github.com/summersb92/aeolipile
+* https://github.com/rcpoison/steam-scraper
+* https://github.com/chmccc/steam-scraper
 
 ---
 
@@ -138,4 +158,3 @@ If you would like to report a bug or suggest an improvement, please use the cont
 📩 https://melcom-creations.github.io/melcom-music/contact.html
 
 Thank you for your patience and support!
-````
