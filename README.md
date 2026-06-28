@@ -1,4 +1,4 @@
-# 🚂 Steam Integration Plugin for GOG Galaxy 2.1+ (64-bit)
+# Steam Integration Plugin for GOG Galaxy 2.1+ (64-bit)
 
 This repository contains the Steam integration plugin for the 64-bit version of GOG Galaxy 2.1+.
 
