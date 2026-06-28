@@ -30,7 +30,7 @@ The original community integration has been updated to work with the current 64-
 
 4. Extract the ZIP archive **directly into this folder**.
 
-After extraction, the directory structure **must** look like this:
+The resulting directory structure **must** look like this:
 
 ```text
 %localappdata%\GOG.com\Galaxy\plugins\installed\
@@ -45,25 +45,37 @@ After extraction, the directory structure **must** look like this:
 
 ### If the plugin folder is missing
 
-If the ZIP archive does **not** already contain the folder
+If a future ZIP archive does **not** already contain the folder
 
 ```text
 steam_ca27391f-2675-49b1-92c0-896d43afa4f8
 ```
 
-create the folder manually inside
+perform the following steps:
+
+1. Open:
 
 ```text
 %localappdata%\GOG.com\Galaxy\plugins\installed\
 ```
 
-and extract the contents of the ZIP archive into it.
+2. Create a new folder named exactly:
 
-The final directory structure must be:
+```text
+steam_ca27391f-2675-49b1-92c0-896d43afa4f8
+```
+
+3. Extract **all files from the ZIP archive into this newly created folder**.
+
+The final directory structure must look like this:
 
 ```text
 %localappdata%\GOG.com\Galaxy\plugins\installed\
 └── steam_ca27391f-2675-49b1-92c0-896d43afa4f8\
+    ├── manifest.json
+    ├── plugin.py
+    ├── README.md
+    └── ...
 ```
 
 ---
@@ -113,7 +125,7 @@ steam_xxxxxxxxx-storage.db.old
 
 Do **not** place backup copies of this plugin inside the `plugins\installed` directory.
 
-GOG Galaxy scans every folder inside this directory during startup. Duplicate plugin folders may lead to GUID conflicts or cause Galaxy to load an outdated version of the plugin.
+GOG Galaxy scans every folder inside this directory during startup. Duplicate plugin folders can lead to GUID conflicts or cause Galaxy to load an outdated version of the plugin.
 
 ---
 
