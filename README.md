@@ -75,20 +75,15 @@ GOG Galaxy scans every plugin folder during startup. Duplicate plugin folders ma
 
 ## 🙏 Credits
 
-### Original Community Integration
-
+**Original Community Integration**
 Friends of Galaxy
-
 https://github.com/FriendsOfGalaxy/galaxy-integration-steam
 
-### Authorization Flow
-
+**Authorization Flow**
 ABaumher
-
 https://github.com/gogcom/galaxy-integrations-steam/pull/171
 
-### 64-bit Port, Maintenance and Improvements
-
+**64-bit Port, Maintenance and Improvements**
 melcom
 
 ---
