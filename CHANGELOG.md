@@ -1,4 +1,20 @@
-## Version 2.1.4-64bit
+# Changelog
+
+All notable changes to this plugin will be documented in this file.
+
+---
+
+## Version 2.1.5-64bit
+
+### Overview
+This maintenance release fixes plugin discovery by aligning the archive root folder with the manifest GUID exactly. Bundled dependencies remain discoverable at startup, and the plugin now packages cleanly for GOG Galaxy's plugin scanner.
+
+### Fixed
+
+### Changed
+---
+
+## Version 2.0.7-64bit
 
 ### Overview
 Maintenance release. Rebuilt all third-party dependencies as clean 64-bit wheels for Python 3.13 via `melcom's Galaxy Plugin Scout v1.1.15`. Removed unused `cffi` and `mypy_extensions`.
