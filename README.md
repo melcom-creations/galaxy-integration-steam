@@ -43,81 +43,15 @@ The resulting directory structure **must** look like this:
 
 5. Start GOG Galaxy.
 
-### If the plugin folder is missing
-
-If a future ZIP archive does **not** already contain the folder
-
-```text
-steam_ca27391f-2675-49b1-92c0-896d43afa4f8
-```
-
-perform the following steps:
-
-1. Open:
-
-```text
-%localappdata%\GOG.com\Galaxy\plugins\installed\
-```
-
-2. Create a new folder named exactly:
-
-```text
-steam_ca27391f-2675-49b1-92c0-896d43afa4f8
-```
-
-3. Extract **all files from the ZIP archive into this newly created folder**.
-
-The final directory structure must look like this:
-
-```text
-%localappdata%\GOG.com\Galaxy\plugins\installed\
-└── steam_ca27391f-2675-49b1-92c0-896d43afa4f8\
-    ├── manifest.json
-    ├── plugin.py
-    ├── README.md
-    └── ...
-```
-
 ---
 
 ## 🔄 Resetting the Plugin Database (Recommended)
 
 If the plugin behaves unexpectedly after an update, resetting the local plugin database is recommended.
 
-1. Open:
-
-```text
-C:\ProgramData\GOG.com\Galaxy\storage\plugins\
-```
-
-2. Locate all files beginning with:
-
-```text
-steam_
-```
-
-and ending with:
-
-```text
--storage.db
-```
-
-3. Rename each database by appending `.old` to its filename.
-
-Example:
-
-```text
-steam_xxxxxxxxx-storage.db
-```
-
-becomes
-
-```text
-steam_xxxxxxxxx-storage.db.old
-```
-
-4. Start GOG Galaxy again.
-5. Reconnect the Steam integration if necessary.
+1. Open `C:\ProgramData\GOG.com\Galaxy\storage\plugins\` and find the files starting with `steam_` and ending in `-storage.db`.
+2. Rename each by appending `.old` (e.g. `steam_xxxxxxxxx-storage.db` -> `steam_xxxxxxxxx-storage.db.old`).
+3. Start GOG Galaxy again and reconnect the Steam integration if necessary.
 
 ---
 
@@ -184,3 +118,4 @@ If you would like to report a bug or suggest an improvement, please use the cont
 📩 https://melcom-creations.github.io/melcom-music/contact.html
 
 Thank you for your patience and support!
+
