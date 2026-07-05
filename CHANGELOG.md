@@ -4,6 +4,28 @@ All notable changes to this plugin will be documented in this file.
 
 ---
 
+## Version 2.1.5-64bit
+
+### Overview
+Maintenance release focused on import consistency and duplicate prevention for Steam-sourced GTA entries in Galaxy. This version also aligns manifest update metadata so release information can be processed consistently across plugin tooling.
+
+### Fixed
+- **Import deduplication hardening:** Steam game imports now deduplicate `owned_games`, `subscription_games`, local app manifests, and normalized Steam library paths to prevent duplicate platform entries in Galaxy for the same app id.
+- **GTA classics alias normalization:** Added canonical AppID normalization for Steam legacy aliases (`12230/12240/12250` -> `12100/12110/12120`) so GTA III, Vice City, and San Andreas are no longer imported as duplicate Steam sources.
+
+### Changed
+- **Manifest update metadata clarified and standardized:** Added a structured `external_updater` block and aligned manifest field layout with the other plugins. This makes release/update information easier to discover and parse consistently in external tooling and maintenance workflows, and reduces configuration drift between plugin repositories.
+
+### Technical Breakdown
+
+#### 1. Import identity normalization
+Import pipelines now treat alias AppIDs and canonical AppIDs as one identity, which prevents duplicate ownership/source records for GTA classics.
+
+#### 2. Manifest metadata consistency
+Updater metadata in the manifest now follows the common structure used across plugins, reducing ambiguity for release parsing and maintenance automation.
+
+---
+
 ## Version 2.1.4-64bit
 
 ### Overview
@@ -15,6 +37,14 @@ Maintenance release. Rebuilt all third-party dependencies as clean 64-bit wheels
 
 ### Packages rebuilt (64-bit)
 `aiohappyeyeballs`, `aiohttp`, `aiosignal`, `attrs`, `certifi`, `cryptography`, `dataclasses_json`, `frozenlist`, `galaxy_plugin_api`, `idna`, `marshmallow`, `multidict`, `packaging`, `propcache`, `protobuf`, `pyasn1`, `pycparser`, `rsa`, `typing_extensions`, `typing_inspect`, `vdf`, `websockets`, `yarl`
+
+### Technical Breakdown
+
+#### 1. Dependency refresh and ABI alignment
+All third-party modules in `/modules/` were rebuilt from clean wheels targeting CPython 3.13 on `win_amd64`, ensuring runtime compatibility with the Galaxy 2.1+ 64-bit environment.
+
+#### 2. Dependency set cleanup
+Static import analysis was used to remove non-required libraries and keep the dependency footprint leaner and easier to maintain.
 
 ---
 

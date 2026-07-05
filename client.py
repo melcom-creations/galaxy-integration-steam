@@ -13,6 +13,19 @@ from galaxy.api.types import LocalGame, LocalGameState
 logger = logging.getLogger(__name__)
 
 
+# Steam exposes legacy duplicate app ids for GTA classics in some license sets.
+# Normalize them so Galaxy receives one canonical source entry per game.
+CANONICAL_APP_ID_ALIASES = {
+    "12230": "12100",  # Grand Theft Auto III
+    "12240": "12110",  # Grand Theft Auto: Vice City
+    "12250": "12120",  # Grand Theft Auto: San Andreas
+}
+
+
+def normalize_app_id(app_id: str) -> str:
+    return CANONICAL_APP_ID_ALIASES.get(str(app_id), str(app_id))
+
+
 class StateFlags(enum.Flag):
     """StateFlags from appmanifest.acf file"""
     Invalid = 0
@@ -125,19 +138,24 @@ def get_app_states_from_registry(app_dict):
                 state |= LocalGameState.Running
             if k.lower() == "installed" and str(v) == "1":
                 state |= LocalGameState.Installed
-        app_states[game] = state
+        normalized_game = normalize_app_id(game)
+        app_states[normalized_game] = app_states.get(normalized_game, LocalGameState.None_) | state
 
     return app_states
 
 
 def local_games_list():
     local_games = []
+    seen_app_ids = set()
     try:
         library_folders = get_library_folders()
         logger.debug("Checking library folders: %s", str(library_folders))
         apps_ids = get_installed_games(library_folders)
         app_states = get_app_states_from_registry(registry_apps_as_dict())
         for app_id in apps_ids:
+            if app_id in seen_app_ids:
+                continue
+            seen_app_ids.add(app_id)
             app_state = app_states.get(app_id)
             if app_state is None:
                 continue
@@ -170,7 +188,15 @@ def get_library_folders() -> Iterable[str]:
     steam_apps_folder = os.path.join(configuration_folder, "steamapps")  # Steam stores the default library in the configuration folder.
     library_folders_config = os.path.join(steam_apps_folder, "libraryfolders.vdf")
     library_folders = get_custom_library_folders(library_folders_config) or []
-    return [steam_apps_folder] + library_folders
+    deduplicated = []
+    seen_paths = set()
+    for path in [steam_apps_folder] + library_folders:
+        normalized = os.path.normcase(os.path.normpath(path))
+        if normalized in seen_paths:
+            continue
+        seen_paths.add(normalized)
+        deduplicated.append(path)
+    return deduplicated
 
 
 def get_client_executable() -> Optional[str]:
@@ -230,7 +256,8 @@ def get_app_manifests(library_folders: Iterable[str]) -> Iterable[str]:
 
 
 def app_id_from_manifest_path(path):
-    return os.path.basename(path)[len('appmanifest_'):-4]
+    app_id = os.path.basename(path)[len('appmanifest_'):-4]
+    return normalize_app_id(app_id)
 
 
 def get_installed_games(library_paths: Iterable[str]) -> Iterable[str]:

@@ -67,6 +67,18 @@ NO_AVATAR_SET = "0000000000000000000000000000000000000000"
 DEFAULT_AVATAR_HASH = "fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb"
 
 
+CANONICAL_APP_ID_ALIASES = {
+    "12230": "12100",  # Grand Theft Auto III
+    "12240": "12110",  # Grand Theft Auto: Vice City
+    "12250": "12120",  # Grand Theft Auto: San Andreas
+}
+
+
+def normalize_app_id(app_id: Union[str, int]) -> str:
+    value = str(app_id)
+    return CANONICAL_APP_ID_ALIASES.get(value, value)
+
+
 def avatar_url_from_avatar_hash(a_hash: str):
     if a_hash == NO_AVATAR_SET:
         a_hash = DEFAULT_AVATAR_HASH
@@ -366,20 +378,25 @@ class SteamNetworkBackend(BackendInterface):
         self._games_cache.add_game_lever = True
 
         owned_games = []
+        seen_app_ids = set()
         owned_witcher_3_dlcs = set()
 
         try:
             async for app in self._games_cache.get_owned_games():
+                normalized_app_id = normalize_app_id(app.appid)
+                if normalized_app_id in seen_app_ids:
+                    continue
+                seen_app_ids.add(normalized_app_id)
                 owned_games.append(
                     Game(
-                        str(app.appid),
+                        normalized_app_id,
                         app.title,
                         [],
                         LicenseInfo(LicenseType.SinglePurchase, None),
                     )
                 )
-                if app.appid in WITCHER_3_DLCS_APP_IDS:
-                    owned_witcher_3_dlcs.add(app.appid)
+                if normalized_app_id in WITCHER_3_DLCS_APP_IDS:
+                    owned_witcher_3_dlcs.add(normalized_app_id)
 
             if does_witcher_3_dlcs_set_resolve_to_GOTY(owned_witcher_3_dlcs):
                 owned_games.append(
@@ -421,8 +438,13 @@ class SteamNetworkBackend(BackendInterface):
 
     async def get_subscription_games(self, subscription_name: str, context: Any):
         games = []
+        seen_app_ids = set()
         async for game in self._games_cache.get_shared_games():
-            games.append(SubscriptionGame(game_id=str(game.appid), game_title=game.title))
+            normalized_app_id = normalize_app_id(game.appid)
+            if normalized_app_id in seen_app_ids:
+                continue
+            seen_app_ids.add(normalized_app_id)
+            games.append(SubscriptionGame(game_id=normalized_app_id, game_title=game.title))
         yield games
 
     async def prepare_achievements_context(self, game_ids: List[str]) -> Any:
