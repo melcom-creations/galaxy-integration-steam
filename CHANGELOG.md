@@ -4,6 +4,56 @@ All notable changes to this plugin will be documented in this file.
 
 ---
 
+## Version 2.1.6-64bit
+
+### Overview for Version 2.1.6-64bit
+
+Maintenance release focused on achievement import resilience, diagnostics, and scalability improvements for large Steam libraries.
+
+### Fixed for Version 2.1.6-64bit
+
+- **Achievement import timeout recovery:** When achievement context preparation exceeds the 600s wait window, pending import state is now reset so subsequent sync runs can retry cleanly instead of remaining stuck in an in-progress state.
+
+- **Aborted import handling:** Interrupted achievement context preparation now triggers explicit recovery behavior that clears pending import tracking and prevents silent carry-over of stale import state.
+
+- **Visibility of partial imports:** Added explicit warning logs for timeout and abort conditions, including pending game counts, to improve troubleshooting and reduce silent data-staleness scenarios.
+
+- **Large-library achievement throughput:** Stats import dispatch is no longer constrained to the previous low in-flight job window, reducing the risk that long queues are cut off before important titles are processed.
+
+- **Partial-import starvation risk:** Achievement stats requests are now prioritized so recently played titles are processed first, improving visible sync quality when imports are interrupted.
+
+### Changed for Version 2.1.6-64bit
+
+- **`backend_steam_network.py` - Achievements context flow hardened:** Added structured logging around prepare/start/timeout/abort paths and recovery handling for incomplete import runs.
+
+- **`modules/steam_network/stats_cache.py` - Import state controls added:** Added pending-count reporting and a dedicated import-abort path to safely release blocked import state after timeout/interrupt.
+
+- **`modules/steam_network/websocket_client.py` - Stats queue prioritization added:** Game ids are now deduplicated and sorted by known `last_played` information before queuing stats imports.
+
+- **`modules/steam_network/protocol/protobuf_client.py` - In-flight job limit increased:** Outgoing protocol job dispatch now allows a larger concurrent window to improve import progress for very large libraries.
+
+- **`plugin.py` - Type consistency cleanup:** Updated local timestamp typing to align with runtime values.
+
+### Technical Breakdown for Version 2.1.6-64bit
+
+#### 1. Timeout and abort recovery for achievement imports
+
+The achievement preparation path now detects incomplete imports after the 600-second wait and explicitly resets pending state. Cancellation paths now perform the same cleanup before propagating cancellation.
+
+#### 2. Improved diagnostics for large-library syncs
+
+Achievement import logs now include clear context for start, timeout, and aborted states, including pending item counts. This makes it easier to distinguish expected retries from hard failures during long-running sync sessions.
+
+#### 3. Prioritized achievement stats import
+
+Achievement import requests now prefer recently played games first using cached play-time metadata. This makes interrupted sync runs more likely to update titles the user actually played recently.
+
+#### 4. Higher protocol dispatch throughput
+
+The protobuf processing loop now dispatches more jobs concurrently, which increases effective import throughput during large achievement batches.
+
+---
+
 ## Version 2.1.5-64bit
 
 ### Overview for Version 2.1.5-64bit

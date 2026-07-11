@@ -28,7 +28,7 @@ The original community integration has been updated to work with the current 64-
 %localappdata%\GOG.com\Galaxy\plugins\installed\
 ```
 
-4. Extract the ZIP archive **directly into this folder**.
+1. Extract the ZIP archive **directly into this folder**.
 
 The resulting directory structure **must** look like this:
 
@@ -41,7 +41,7 @@ The resulting directory structure **must** look like this:
     └── ...
 ```
 
-5. Start GOG Galaxy.
+1. Start GOG Galaxy.
 
 ---
 
@@ -53,6 +53,23 @@ If the plugin behaves unexpectedly after an update, resetting the local plugin d
 2. Rename each by appending `.old` (e.g. `steam_xxxxxxxxx-storage.db` -> `steam_xxxxxxxxx-storage.db.old`).
 3. Start GOG Galaxy again and reconnect the Steam integration if necessary.
 
+### 🚀 First Start and Initial Sync (Important)
+
+For a clean first run after installing or updating the plugin:
+
+1. Close GOG Galaxy.
+2. Open this folder:
+
+```text
+C:\ProgramData\GOG.com\Galaxy\storage\plugins\
+```
+
+1. If a `steam_...-storage.db` file exists there, delete it.
+2. Start GOG Galaxy.
+3. Start Steam and keep it open.
+4. In GOG Galaxy, open the account menu (top-right) and click **Sync integrations**.
+5. Wait until sync finishes.
+
 ---
 
 ## ⚠️ Important
@@ -63,15 +80,27 @@ GOG Galaxy scans every folder inside this directory during startup. Duplicate pl
 
 ---
 
+## ⚠️ Known Limitation
+
+### Achievement metadata depends on GOG Galaxy servers
+
+The Steam integration can import and sync unlocked achievements, but achievement metadata (such as names, descriptions, icons, and total counts) is provided by GOG Galaxy backend services.
+
+If GOG has not yet updated this metadata for newer DLCs or game updates, achievements may not immediately appear correctly in the Galaxy UI even when the plugin import itself has already completed.
+
+In this case, no further plugin action is usually required. The display updates once GOG Galaxy metadata is refreshed server-side.
+
+---
+
 ## 🙏 Credits
 
 **Original Community Integration**
 Friends of Galaxy
-https://github.com/FriendsOfGalaxy/galaxy-integration-steam
+[https://github.com/FriendsOfGalaxy/galaxy-integration-steam](https://github.com/FriendsOfGalaxy/galaxy-integration-steam)
 
 **Authorization Flow Contributions**
 ABaumher
-https://github.com/ABaumher
+[https://github.com/ABaumher](https://github.com/ABaumher)
 
 **64-bit Port, Maintenance and Improvements**
 melcom
@@ -82,14 +111,14 @@ melcom
 
 This integration is based on and inspired by several open-source projects and community resources.
 
-* https://github.com/SteamRE/SteamKit
-* https://github.com/ValuePython/steam
-* https://github.com/prncc/steam-scraper
-* https://github.com/rhaarm/steam-scraper
-* https://github.com/mulhod/steam_reviews
-* https://github.com/summersb92/aeolipile
-* https://github.com/rcpoison/steam-scraper
-* https://github.com/chmccc/steam-scraper
+* [https://github.com/SteamRE/SteamKit](https://github.com/SteamRE/SteamKit)
+* [https://github.com/ValuePython/steam](https://github.com/ValuePython/steam)
+* [https://github.com/prncc/steam-scraper](https://github.com/prncc/steam-scraper)
+* [https://github.com/rhaarm/steam-scraper](https://github.com/rhaarm/steam-scraper)
+* [https://github.com/mulhod/steam_reviews](https://github.com/mulhod/steam_reviews)
+* [https://github.com/summersb92/aeolipile](https://github.com/summersb92/aeolipile)
+* [https://github.com/rcpoison/steam-scraper](https://github.com/rcpoison/steam-scraper)
+* [https://github.com/chmccc/steam-scraper](https://github.com/chmccc/steam-scraper)
 
 ---
 
@@ -103,7 +132,9 @@ I want to take a moment to thank the people who kept me going during this intens
 
   *Now that's what I call real support.* ❤️
 
-Thank you both for having my back!
+* A special thank you to GOG community member [**nickpeyon**](https://www.gog.com/u/nickpeyon), with whom I had extensive email conversations. Your massive Steam game collection helped inspire the direction for several of the large-library improvements in this project.
+
+Thank you all for having my back!
 
 ---
 
@@ -115,7 +146,6 @@ This project is developed and maintained by one person. Response times may vary,
 
 If you would like to report a bug or suggest an improvement, please use the contact form on my website:
 
-📩 https://melcom-creations.github.io/melcom-music/contact.html
+📩 [https://melcom-creations.github.io/melcom-music/contact.html](https://melcom-creations.github.io/melcom-music/contact.html)
 
 Thank you for your patience and support!
-

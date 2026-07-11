@@ -63,7 +63,7 @@ from version import __version__
 
 logger = logging.getLogger(__name__)
 
-Timestamp = NewType("Timestamp", int)
+Timestamp = NewType("Timestamp", float)
 
 COOLDOWN_TIME = 5
 AUTH_SETUP_ON_VERSION__CACHE_KEY = "auth_setup_on_version"
@@ -78,7 +78,7 @@ class SteamPlugin(Plugin):
         # Local feature state.
         self._regmon = get_steam_registry_monitor()
         self._local_games_cache: Optional[List[LocalGame]] = None
-        self._last_launch: Timestamp = 0
+        self._last_launch: Timestamp = Timestamp(0)
         self._update_local_games_task = asyncio.create_task(asyncio.sleep(0))
 
         # HTTP client.
@@ -217,7 +217,7 @@ class SteamPlugin(Plugin):
         self._local_games_cache = new_list
         for game in notify_list:
             if LocalGameState.Running in game.local_game_state:
-                self._last_launch = time.time()
+                self._last_launch = Timestamp(time.time())
             self.update_local_game_status(game)
         await asyncio.sleep(COOLDOWN_TIME)
 

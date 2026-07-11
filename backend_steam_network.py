@@ -87,7 +87,7 @@ def avatar_url_from_avatar_hash(a_hash: str):
 
 class SteamNetworkBackend(BackendInterface):
     def __init__(self, http_client: HttpClient, ssl_context: ssl.SSLContext,
-                 persistent_storage_state: PersistentCacheState, persistent_cache: Dict[str, Any], update_user_presence: Callable[[UserPresence], None],
+                 persistent_storage_state: PersistentCacheState, persistent_cache: Dict[str, Any], update_user_presence: Callable[[str, UserPresence], None],
                  store_credentials: Callable[[Dict[str, Any]], None], add_game: Callable[[Game], None]):
 
         self._add_game : Callable[[Game], None] = add_game
@@ -451,14 +451,43 @@ class SteamNetworkBackend(BackendInterface):
         if self._user_info_cache.steam_id is None:
             raise AuthenticationRequired()
 
-        if not self._stats_cache.import_in_progress:
-            await self._websocket_client.refresh_game_stats(game_ids.copy())
-        else:
-            logger.info("Game stats import already in progress")
-        await self._stats_cache.wait_ready(
-            10 * 60
-        )  # Do not block later imports if one of the responses never arrives.
-        logger.info("Finished achievements context prepare")
+        requested_games_count = len(game_ids)
+        logger.info(
+            "Preparing achievements context for %d game(s)",
+            requested_games_count,
+        )
+
+        try:
+            if not self._stats_cache.import_in_progress:
+                await self._websocket_client.refresh_game_stats(game_ids.copy())
+            else:
+                logger.info(
+                    "Game stats import already in progress (%d game(s) pending)",
+                    self._stats_cache.pending_games_count,
+                )
+
+            await self._stats_cache.wait_ready(
+                10 * 60
+            )  # Do not block later imports if one of the responses never arrives.
+
+            if self._stats_cache.import_in_progress:
+                pending_count = self._stats_cache.pending_games_count
+                logger.warning(
+                    "Achievements import timed out after 600s (%d game(s) pending). "
+                    "Current call will continue with partial data and next import can retry.",
+                    pending_count,
+                )
+                self._stats_cache.abort_game_stats_import()
+            else:
+                logger.info("Finished achievements context prepare")
+        except asyncio.CancelledError:
+            pending_count = self._stats_cache.pending_games_count
+            logger.warning(
+                "Achievements context preparation aborted (%d game(s) still pending)",
+                pending_count,
+            )
+            self._stats_cache.abort_game_stats_import()
+            raise
 
     async def get_unlocked_achievements(self, game_id: str, context: Any) -> List[Achievement]:
         logger.info(f"Asked for achievs for {game_id}")
