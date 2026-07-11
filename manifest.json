@@ -2,7 +2,7 @@
   "name": "Galaxy Steam plugin",
   "platform": "steam",
   "guid": "ca27391f-2675-49b1-92c0-896d43afa4f8",
-  "version": "2.1.6-64bit",
+  "version": "2.1.7-64bit",
   "description": "Steam integration for GOG Galaxy 2.1+ (64-bit)",
   "author": "melcom",
   "url": "https://github.com/melcom-creations/galaxy-integration-steam",

@@ -4,6 +4,16 @@ All notable changes to this plugin will be documented in this file.
 
 ---
 
+## Version 2.1.7-64bit
+
+### Fixes
+
+- **Authentication and local-library imports:** Incomplete cached data is validated safely before an import continues.
+- **Platform-specific integration checks:** Registry and URI-handler checks load only on their supported operating systems.
+- **Local-game discovery:** Interrupted discovery no longer masks the original scan result.
+
+---
+
 ## Version 2.1.6-64bit
 
 ### Overview for Version 2.1.6-64bit
@@ -21,6 +31,10 @@ Maintenance release focused on achievement import resilience, diagnostics, and s
 - **Large-library achievement throughput:** Stats import dispatch is no longer constrained to the previous low in-flight job window, reducing the risk that long queues are cut off before important titles are processed.
 
 - **Partial-import starvation risk:** Achievement stats requests are now prioritized so recently played titles are processed first, improving visible sync quality when imports are interrupted.
+
+- **Authentication and local-library validation:** Incomplete cached identity data, empty two-factor options, unavailable local registry data, and failed local scans now resolve safely instead of leaving an import in an inconsistent state.
+
+- **Platform-specific integration checks:** Windows registry and macOS URI-handler paths are loaded only on their respective platforms, keeping startup and local-game detection stable on unsupported platforms.
 
 ### Changed for Version 2.1.6-64bit
 

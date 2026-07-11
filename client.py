@@ -4,6 +4,7 @@ import logging
 import os
 import enum
 import platform
+from importlib import import_module
 from typing import Iterable, List, Optional, Dict, Any
 
 import vdf
@@ -64,9 +65,10 @@ def load_vdf(path: str) -> Dict[str, Any]:
     return vdf.load(open(path, encoding="utf-8", errors="replace"), mapper=CaseInsensitiveDict)
 
 
-# Windows registry access.
+winreg: Any = None
+
 if platform.system() == "Windows":
-    import winreg
+    winreg = import_module("winreg")
 
 
     def registry_apps_as_dict():
@@ -163,8 +165,7 @@ def local_games_list():
             local_games.append(local_game)
     except:
         logger.exception("Failed to get local games list")
-    finally:
-        return local_games
+    return local_games
 
 
 def get_state_changes(old_list, new_list):

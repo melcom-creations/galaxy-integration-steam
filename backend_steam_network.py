@@ -2,7 +2,7 @@ import asyncio
 import logging
 import ssl
 from contextlib import suppress
-from typing import Callable, List, Any, Dict, Union, Coroutine, cast
+from typing import Callable, List, Any, Dict, Union, cast
 from urllib import parse
 from pprint import pformat
 
@@ -110,7 +110,7 @@ class SteamNetworkBackend(BackendInterface):
                 await presence_from_user_info(proto_user_info, self._translations_cache),
             )
 
-        self._friends_cache.updated_handler : Callable[[str, ProtoUserInfo], Coroutine[Any, Any, None]] = user_presence_update_handler
+        self._friends_cache.updated_handler = user_presence_update_handler
 
         local_machine_cache : LocalMachineCache = LocalMachineCache(self._persistent_cache, self._persistent_storage_state)
 
@@ -190,7 +190,7 @@ class SteamNetworkBackend(BackendInterface):
         except asyncio.TimeoutError:
             raise BackendTimeout()
 
-    def _get_mobile_confirm_kwargs(self, allowed_methods: Dict[TwoFactorMethod, str]):
+    def _get_mobile_confirm_kwargs(self, allowed_methods: List[tuple[TwoFactorMethod, str]]):
         fallbackData = {}
         if len(allowed_methods) > 1:
             fallback_meth, fallback_message = allowed_methods[1]
@@ -246,6 +246,8 @@ class SteamNetworkBackend(BackendInterface):
             return await self._handle_steam_guard_none()
         elif (result == UserActionRequired.TwoFactorRequired):
             allowed_methods = self._authentication_cache.two_factor_allowed_methods
+            if not allowed_methods:
+                raise UnknownBackendResponse()
             method, msg = allowed_methods[0]
             if (method == TwoFactorMethod.Nothing):
                 return await self._handle_steam_guard_none()
@@ -281,7 +283,7 @@ class SteamNetworkBackend(BackendInterface):
     async def _handle_steam_guard_none(self) -> Authentication:
         result = await self._handle_2FA_PollOnce()
         if (result == UserActionRequired.NoActionRequired):
-            return Authentication(self._user_info_cache.steam_id, self._user_info_cache.persona_name)
+            return self._authentication_from_cache()
         elif result == UserActionRequired.NoActionConfirmToken:
             return await self._finish_auth_process()
         else:
@@ -291,7 +293,7 @@ class SteamNetworkBackend(BackendInterface):
         result = await self._handle_2FA_PollOnce(is_confirm)
         logger.info(f"steam guard check next action: {result.name}")
         if (result == UserActionRequired.NoActionRequired): # This branch should not occur here because the token still needs confirmation.
-            return Authentication(self._user_info_cache.steam_id, self._user_info_cache.persona_name)
+            return self._authentication_from_cache()
         elif (result == UserActionRequired.NoActionConfirmToken):
             return await self._finish_auth_process()
         elif(result == UserActionRequired.NoActionConfirmLogin or result == UserActionRequired.TwoFactorRequired):
@@ -332,7 +334,7 @@ class SteamNetworkBackend(BackendInterface):
                 logger.warning("Unexpected Action Required after normal login. Nothing to fall back to")
                 raise UnknownBackendResponse()
             else:
-                return Authentication(self._user_info_cache.steam_id, self._user_info_cache.persona_name)
+                return self._authentication_from_cache()
         else:
             logger.warning("User Info Cache not initialized after normal login. Unexpected")
             raise UnknownBackendResponse()
@@ -363,10 +365,17 @@ class SteamNetworkBackend(BackendInterface):
                 self._user_info_cache.Clear()
                 return next_step_response_simple(DisplayUriHelper.LOGIN)
             else:
-                return Authentication(self._user_info_cache.steam_id, self._user_info_cache.persona_name)
+                return self._authentication_from_cache()
         else:
             logger.warning("User Info Cache not initialized properly. Falling back to normal login.")
             return next_step_response_simple(DisplayUriHelper.LOGIN)
+
+    def _authentication_from_cache(self) -> Authentication:
+        steam_id = self._user_info_cache.steam_id
+        persona_name = self._user_info_cache.persona_name
+        if steam_id is None or not persona_name:
+            raise AuthenticationRequired()
+        return Authentication(str(steam_id), persona_name)
 
     # Feature implementations.
 
@@ -524,8 +533,9 @@ class SteamNetworkBackend(BackendInterface):
         logger.info("Finished game times context prepare")
 
     async def get_game_time(self, game_id: str, context: Dict[int, int]) -> GameTime:
-        time_played = self._times_cache.get(game_id, {}).get("time_played")
-        last_played = self._times_cache.get(game_id, {}).get("last_played")
+        game_time = self._times_cache.get(game_id) or {}
+        time_played = game_time.get("time_played")
+        last_played = game_time.get("last_played")
         if last_played == GAME_DOES_NOT_SUPPORT_LAST_PLAYED_VALUE:
             last_played = None
         return GameTime(game_id, time_played, last_played)

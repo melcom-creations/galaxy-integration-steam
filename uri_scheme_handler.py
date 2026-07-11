@@ -25,10 +25,13 @@ if platform.system().lower() == "windows":
 
 elif platform.system().lower() == "darwin":
 
-    from CoreServices.LaunchServices import LSCopyDefaultHandlerForURLScheme
-    from AppKit import NSWorkspace
+    from importlib import import_module
 
     def is_uri_handler_installed(protocol):
+        launch_services = import_module("CoreServices.LaunchServices")
+        app_kit = import_module("AppKit")
+        LSCopyDefaultHandlerForURLScheme = launch_services.LSCopyDefaultHandlerForURLScheme
+        NSWorkspace = app_kit.NSWorkspace
         bundle_id = LSCopyDefaultHandlerForURLScheme(protocol)
         if not bundle_id:
             return False

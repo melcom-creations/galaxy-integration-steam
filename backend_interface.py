@@ -40,8 +40,8 @@ class BackendInterface(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def pass_login_credentials(self, deprecated:str, credentials, cookies):
-        pass
+    async def pass_login_credentials(self, step: str, credentials, cookies) -> Union[Authentication, NextStep]:
+        raise NotImplementedError()
 
     @abc.abstractmethod
     def tick(self):

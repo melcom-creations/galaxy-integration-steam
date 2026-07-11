@@ -189,8 +189,8 @@ class SteamPlugin(Plugin):
     async def get_friends(self) -> List[UserInfo]:
         return await self._backend.get_friends()
 
-    async def prepare_user_presence_context(self, user_ids: List[str]) -> Any:
-        return await self._backend.prepare_user_presence_context(user_ids)
+    async def prepare_user_presence_context(self, user_id_list: List[str]) -> Any:
+        return await self._backend.prepare_user_presence_context(user_id_list)
 
     async def get_user_presence(self, user_id: str, context: Any) -> UserPresence:
         return await self._backend.get_user_presence(user_id, context)
@@ -239,10 +239,10 @@ class SteamPlugin(Plugin):
         if self._pushing_cache_task.done() and self._persistent_storage_state.modified:
             self._pushing_cache = asyncio.create_task(self._push_cache())
 
-    async def get_local_games(self):
+    async def get_local_games(self) -> List[LocalGame]:
         loop = asyncio.get_running_loop()
         self._local_games_cache = await loop.run_in_executor(None, local_games_list)
-        return self._local_games_cache
+        return self._local_games_cache or []
 
     @staticmethod
     def _steam_command(command, game_id):
