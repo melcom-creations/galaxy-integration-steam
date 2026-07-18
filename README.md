@@ -1,36 +1,45 @@
 # Steam Integration Plugin for GOG Galaxy 2.1+ (64-bit)
 
-This repository contains the Steam integration plugin for the 64-bit version of GOG Galaxy 2.1+.
-
-The original community integration has been updated to work with the current 64-bit GOG Galaxy client and Python 3.13. In addition to compatibility improvements, this project includes dependency updates, bug fixes, stability improvements and ongoing maintenance.
+This repository contains the Steam integration plugin for the native 64-bit version of GOG Galaxy 2.1+. It is based on the original community integration and has been updated for the current GOG Galaxy client and Python 3.13. The project includes updated dependencies, compatibility fixes, stability improvements, and ongoing maintenance.
 
 ---
 
 ## ✨ Features
 
-* Compatible with GOG Galaxy 2.1+ (64-bit)
-* Python 3.13 support
-* Updated 64-bit dependencies
-* Improved stability and compatibility
-* Ongoing maintenance and bug fixes
+* Imports your owned Steam games into GOG Galaxy
+* Syncs achievements and game time
+* Detects locally installed Steam games
+* Launches, installs, and uninstalls games through Steam
+* Includes improved handling for large Steam libraries
+* Supports GOG Galaxy 2.1+ 64-bit and Python 3.13
+* Includes updated dependencies, compatibility fixes, and stability improvements
 
 ---
 
 ## 📦 Installation
 
-### Standard Installation (Recommended)
+### Automatic Installation with Plugin Updater (Recommended)
 
-1. Close GOG Galaxy completely.
-2. Download the latest release from this repository.
-3. Open the following folder:
+The easiest way to install the Steam integration is with the [melcom GOG Galaxy Plugin Updater](https://github.com/melcom-creations/galaxy-integrations-64bit/tree/main/tools/melcom-galaxy_plugin_updater). The updater detects existing integrations and can install any supported melcom plugins that are still missing.
+
+1. Download and extract the Plugin Updater.
+2. Double-click `update-plugins.bat`.
+3. Select your preferred language.
+4. Follow the displayed instructions.
+
+When installing the Steam integration, the updater can also offer optional automatic startup support for [Steam Achievement Notifier](https://github.com/SteamAchievementNotifier/SteamAchievementNotifier).
+
+### Manual Installation
+
+1. Close GOG Galaxy completely and make sure it is no longer running in the system tray.
+2. Download the latest release package from this repository.
+3. Extract the ZIP archive directly into:
 
 ```text
 %localappdata%\GOG.com\Galaxy\plugins\installed\
 ```
 
-1. Extract the ZIP archive **directly into this folder**.
-
-The resulting directory structure **must** look like this:
+The resulting directory structure must look like this:
 
 ```text
 %localappdata%\GOG.com\Galaxy\plugins\installed\
@@ -41,34 +50,37 @@ The resulting directory structure **must** look like this:
     └── ...
 ```
 
-1. Start GOG Galaxy.
+4. Continue with **First Start and Initial Sync** below.
 
 ---
 
-## 🔄 Resetting the Plugin Database (Recommended)
+## 🚀 First Start and Initial Sync
 
-If the plugin behaves unexpectedly after an update, resetting the local plugin database is recommended.
+For the first synchronization after installing or updating the plugin:
 
-1. Open `C:\ProgramData\GOG.com\Galaxy\storage\plugins\` and find the files starting with `steam_` and ending in `-storage.db`.
-2. Rename each by appending `.old` (e.g. `steam_xxxxxxxxx-storage.db` -> `steam_xxxxxxxxx-storage.db.old`).
-3. Start GOG Galaxy again and reconnect the Steam integration if necessary.
-
-### 🚀 First Start and Initial Sync (Important)
-
-For a clean first run after installing or updating the plugin:
-
-1. Close GOG Galaxy.
-2. Open this folder:
-
-```text
-C:\ProgramData\GOG.com\Galaxy\storage\plugins\
-```
-
-1. If a `steam_...-storage.db` file exists there, delete it.
+1. Start Steam and keep it open.
 2. Start GOG Galaxy.
-3. Start Steam and keep it open.
-4. In GOG Galaxy, open the account menu (top-right) and click **Sync integrations**.
-5. Wait until sync finishes.
+3. Connect the Steam integration through **Settings -> Integrations** if necessary.
+4. Open the account menu in the top-right corner and select **Sync integrations**.
+5. Wait until the synchronization has finished.
+
+---
+
+## 🔄 Resetting the Plugin Database (Troubleshooting)
+
+Reset the local plugin database only if the integration behaves unexpectedly or synchronization problems continue after restarting both applications.
+
+1. Close GOG Galaxy completely.
+2. Open `C:\ProgramData\GOG.com\Galaxy\storage\plugins\`.
+3. Find every file starting with `steam_` and ending in `-storage.db`.
+4. Rename each matching file by appending `.old`, for example:
+
+   `steam_xxxxxxxxx-storage.db` -> `steam_xxxxxxxxx-storage.db.old`
+
+5. Start Steam and keep it open.
+6. Start GOG Galaxy and reconnect the Steam integration if necessary.
+7. Open the account menu in the top-right corner and select **Sync integrations**.
+8. Wait until the synchronization has finished.
 
 ---
 
@@ -82,27 +94,27 @@ GOG Galaxy scans every folder inside this directory during startup. Duplicate pl
 
 ## ⚠️ Known Limitation
 
-### Achievement metadata depends on GOG Galaxy servers
+### Achievement Metadata Depends on GOG Galaxy Servers
 
-The Steam integration can import and sync unlocked achievements, but achievement metadata (such as names, descriptions, icons, and total counts) is provided by GOG Galaxy backend services.
+The Steam integration can import and sync unlocked achievements, but achievement metadata such as names, descriptions, icons, and total counts is provided by GOG Galaxy backend services.
 
-If GOG has not yet updated this metadata for newer DLCs or game updates, achievements may not immediately appear correctly in the Galaxy UI even when the plugin import itself has already completed.
+If GOG has not yet updated this metadata for newer DLCs or game updates, achievements may not immediately appear correctly in the Galaxy interface even when the plugin import has completed successfully.
 
-In this case, no further plugin action is usually required. The display updates once GOG Galaxy metadata is refreshed server-side.
+In this case, no further plugin action is usually required. The display updates after GOG refreshes the achievement metadata on its servers.
 
 ---
 
 ## 🙏 Credits
 
-**Original Community Integration**
-Friends of Galaxy
-[https://github.com/FriendsOfGalaxy/galaxy-integration-steam](https://github.com/FriendsOfGalaxy/galaxy-integration-steam)
+**Original Community Integration**  
+Friends of Galaxy  
+[Friends of Galaxy Steam integration](https://github.com/FriendsOfGalaxy/galaxy-integration-steam)
 
-**Authorization Flow Contributions**
-ABaumher
-[https://github.com/ABaumher](https://github.com/ABaumher)
+**Authorization Flow Contributions**  
+ABaumher  
+[ABaumher on GitHub](https://github.com/ABaumher)
 
-**64-bit Port, Maintenance and Improvements**
+**64-bit Port, Maintenance and Improvements**  
 melcom
 
 ---
@@ -111,14 +123,14 @@ melcom
 
 This integration is based on and inspired by several open-source projects and community resources.
 
-* [https://github.com/SteamRE/SteamKit](https://github.com/SteamRE/SteamKit)
-* [https://github.com/ValuePython/steam](https://github.com/ValuePython/steam)
-* [https://github.com/prncc/steam-scraper](https://github.com/prncc/steam-scraper)
-* [https://github.com/rhaarm/steam-scraper](https://github.com/rhaarm/steam-scraper)
-* [https://github.com/mulhod/steam_reviews](https://github.com/mulhod/steam_reviews)
-* [https://github.com/summersb92/aeolipile](https://github.com/summersb92/aeolipile)
-* [https://github.com/rcpoison/steam-scraper](https://github.com/rcpoison/steam-scraper)
-* [https://github.com/chmccc/steam-scraper](https://github.com/chmccc/steam-scraper)
+* [SteamKit](https://github.com/SteamRE/SteamKit)
+* [ValuePython/steam](https://github.com/ValuePython/steam)
+* [prncc/steam-scraper](https://github.com/prncc/steam-scraper)
+* [rhaarm/steam-scraper](https://github.com/rhaarm/steam-scraper)
+* [mulhod/steam_reviews](https://github.com/mulhod/steam_reviews)
+* [summersb92/aeolipile](https://github.com/summersb92/aeolipile)
+* [rcpoison/steam-scraper](https://github.com/rcpoison/steam-scraper)
+* [chmccc/steam-scraper](https://github.com/chmccc/steam-scraper)
 
 ---
 
@@ -146,6 +158,6 @@ This project is developed and maintained by one person. Response times may vary,
 
 If you would like to report a bug or suggest an improvement, please use the contact form on my website:
 
-📩 [https://melcom-creations.github.io/melcom-music/contact.html](https://melcom-creations.github.io/melcom-music/contact.html)
+📩 [Contact form](https://melcom-creations.github.io/melcom-music/contact.html)
 
 Thank you for your patience and support!
