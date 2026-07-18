@@ -182,4 +182,4 @@ Before contacting me, follow **What to Do If the Plugin Has Problems** and prepa
 * **Email:** `melcom @ gmx.net`
 * **Discord:** `.melcom` - the leading dot is part of the username. You can send me a message or add me as a friend.
 
-Logs can be attached directly or shared through Dropbox or OneDrive. Response times may vary depending on my health and available development time. Thank you for your understanding.
+Logs can be attached directly or shared using an accessible cloud storage link, such as Dropbox, OneDrive, Google Drive, or a similar service. Response times may vary depending on my health and available development time. Thank you for your understanding.
