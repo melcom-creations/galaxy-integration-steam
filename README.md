@@ -12,6 +12,9 @@ This plugin imports your Steam library into GOG Galaxy 2.1+ 64-bit. Based on the
 * Launches, installs, and uninstalls games through Steam
 * Includes improved handling for large Steam libraries
 
+> [!NOTE]
+> macOS compatibility may be technically possible, but it is currently untested because I do not have access to a Mac. If you use macOS and would like to help test the integration, feel free to contact me.
+
 ---
 
 ## 📦 Installation
