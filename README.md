@@ -51,7 +51,7 @@ The resulting directory structure must look like this:
     └── ...
 ```
 
-4. Continue with **First Start and Initial Sync** below.
+**Next step:** Continue with **First Start and Initial Sync** below.
 
 > [!IMPORTANT]
 > Do not place backup copies of this plugin inside the `plugins\installed` directory. GOG Galaxy scans every folder inside this directory during startup, so duplicate plugin folders can cause GUID conflicts or load an outdated version.
