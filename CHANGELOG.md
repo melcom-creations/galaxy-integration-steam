@@ -4,9 +4,26 @@ All notable changes to this plugin will be documented in this file.
 
 ---
 
+## Version 2.1.8-64bit
+
+### Fixes for Version 2.1.8-64bit
+
+- **Repeated login prompts after every reboot:** The credential-encryption key is derived in part from a hardware ID looked up via `wmic` on Windows. Immediately after a system boot, the WMI service can still be starting up, so this lookup could silently return an empty value for that process lifetime - producing a different key than the one used when credentials were last saved, which made decryption fail and forced a full login (including two-factor confirmation) on every restart following a fresh boot. The lookup now retries briefly before giving up, giving WMI a chance to finish starting.
+- **Login prompts persisting even with the retry above:** Testing showed that on some Windows installations, `wmic.exe` isn't just slow to start - it's not installed at all (Microsoft has been removing it from current Windows builds), so retrying it doesn't help. Two further changes address this:
+  - The hardware-ID lookup now falls back to PowerShell (`Get-CimInstance`) when `wmic` isn't available, since PowerShell ships with every supported version of Windows.
+  - More importantly, the credential-encryption key is now cached in the plugin's persistent storage the first time it's successfully derived, and reused on every later run instead of being re-derived from system state each time. Previously, if any part of that system state (hardware ID, network adapter identifier) came out differently between two runs, the newly derived key couldn't decrypt credentials saved under the old key, forcing a full re-login. Caching the key removes that dependency entirely once it's been established once.
+- **Steam authentication and two-factor handling:** Corrected the processing of Steam's preferred two-factor method and added safeguards for missing authentication, polling, and token state.
+- **Presence and connection stability:** Added safeguards for missing game IDs, invalid WebSocket hostnames, and unavailable protocol or WebSocket state.
+- **Internal reliability and compatibility:** Corrected exception-data handling, cache serialization, callback definitions, and platform-specific helper selection.
+- **Dead code in machine ID generation:** Removed a leftover duplicate `machine_id_v3()` definition and a redundant reassignment of the `machine_id` alias that had no effect on behavior but made the module harder to follow.
+
+**Special thanks to Nereus Hixon** for reporting the issue, providing detailed logs and Event Viewer screenshots, and testing across multiple boot cycles to help pin down the reproduction pattern.
+
+---
+
 ## Version 2.1.7-64bit
 
-### Fixes
+### Fixes for Version 2.1.7-64bit
 
 - **Authentication and local-library imports:** Incomplete cached data is validated safely before an import continues.
 - **Platform-specific integration checks:** Registry and URI-handler checks load only on their supported operating systems.
