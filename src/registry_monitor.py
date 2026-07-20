@@ -5,8 +5,10 @@ if platform.system().lower() == "windows":
 
     HKEY_CURRENT_USER = 0x80000001
 
-    def get_steam_registry_monitor():
+    def _get_windows_steam_registry_monitor():
         return RegistryMonitor(HKEY_CURRENT_USER, r"Software\Valve\Steam\Apps")
+
+    get_steam_registry_monitor = _get_windows_steam_registry_monitor
 
 else:
 
@@ -34,5 +36,7 @@ else:
         def close(self):
             pass
 
-    def get_steam_registry_monitor():
+    def _get_file_steam_registry_monitor():
         return FileRegistryMonitor(os.path.expanduser("~/Library/Application Support/Steam/registry.vdf"))
+
+    get_steam_registry_monitor = _get_file_steam_registry_monitor

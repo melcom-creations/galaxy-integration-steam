@@ -2,7 +2,7 @@ import asyncio
 import logging
 import ssl
 from contextlib import suppress
-from typing import Callable, List, Any, Dict, Union, cast
+from typing import Callable, List, Any, Dict, Union, cast, Optional
 from urllib import parse
 from pprint import pformat
 
@@ -96,10 +96,13 @@ class SteamNetworkBackend(BackendInterface):
 
         self._store_credentials : Callable[[Dict[str, Any]], None] = store_credentials
         self._authentication_cache : AuthenticationCache = AuthenticationCache()
-        self._user_info_cache : UserInfoCache = UserInfoCache()
+        self._user_info_cache : UserInfoCache = UserInfoCache(
+            cached_key_getter=self._get_cached_credential_key,
+            cached_key_setter=self._set_cached_credential_key,
+        )
 
         self._games_cache : GamesCache = GamesCache()
-        self._translations_cache : Dict[int, str] = dict()
+        self._translations_cache: Dict[int, Optional[Any]] = dict()
         self._stats_cache :StatsCache = StatsCache()
         self._times_cache : TimesCache = TimesCache()
         self._friends_cache : FriendsCache = FriendsCache()
@@ -136,6 +139,18 @@ class SteamNetworkBackend(BackendInterface):
     def _load_persistent_cache(self):
         if "games" in self._persistent_cache:
             self._games_cache.loads(self._persistent_cache["games"])
+
+    # Key used to persist the credential-encryption key (see UserInfoCache /
+    # SecureCredentialStorage.resolve_key_v3) across plugin restarts, so it
+    # doesn't need to be re-derived from volatile system state every time.
+    _CREDENTIAL_KEY_CACHE_KEY = "credential_encryption_key_v3"
+
+    def _get_cached_credential_key(self) -> Optional[str]:
+        return self._persistent_cache.get(self._CREDENTIAL_KEY_CACHE_KEY)
+
+    def _set_cached_credential_key(self, key_b64: str):
+        self._persistent_cache[self._CREDENTIAL_KEY_CACHE_KEY] = key_b64
+        self._persistent_storage_state.modified = True
 
     async def shutdown(self):
         await self._websocket_client.close()

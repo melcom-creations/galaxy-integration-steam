@@ -71,7 +71,7 @@ if platform.system() == "Windows":
     winreg = import_module("winreg")
 
 
-    def registry_apps_as_dict():
+    def _windows_registry_apps_as_dict():
         try:
             apps = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam\Apps")
         except OSError as e:
@@ -109,10 +109,12 @@ if platform.system() == "Windows":
 
         return apps_dict
 
+    registry_apps_as_dict = _windows_registry_apps_as_dict
+
 
 elif platform.system().lower() == "darwin":
     # macOS registry emulation via registry.vdf.
-    def registry_apps_as_dict():
+    def _macos_registry_apps_as_dict():
         try:
             registry = load_vdf(os.path.expanduser("~/Library/Application Support/Steam/registry.vdf"))
         except OSError:
@@ -125,10 +127,14 @@ elif platform.system().lower() == "darwin":
             logger.exception("Failed to parse Steam registry")
             return {}
 
+    registry_apps_as_dict = _macos_registry_apps_as_dict
+
 # Fallback for other systems.
 else:
-    def registry_apps_as_dict():
+    def _empty_registry_apps_as_dict():
         return {}
+
+    registry_apps_as_dict = _empty_registry_apps_as_dict
 
 
 def get_app_states_from_registry(app_dict):
