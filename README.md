@@ -1,36 +1,43 @@
 # Steam Integration Plugin for GOG Galaxy 2.1+ (64-bit)
 
-This repository contains the Steam integration plugin for the 64-bit version of GOG Galaxy 2.1+.
-
-The original community integration has been updated to work with the current 64-bit GOG Galaxy client and Python 3.13. In addition to compatibility improvements, this project includes dependency updates, bug fixes, stability improvements and ongoing maintenance.
+This plugin imports your Steam library into GOG Galaxy 2.1+ 64-bit. Based on the original community integration, it has been updated for the current GOG Galaxy client and Python 3.13, with improved support for large libraries.
 
 ---
 
 ## ✨ Features
 
-* Compatible with GOG Galaxy 2.1+ (64-bit)
-* Python 3.13 support
-* Updated 64-bit dependencies
-* Improved stability and compatibility
-* Ongoing maintenance and bug fixes
+* Imports your owned Steam games into GOG Galaxy
+* Syncs achievements and game time
+* Detects locally installed Steam games
+* Launches, installs, and uninstalls games through Steam
+* Includes improved handling for large Steam libraries
 
 ---
 
 ## 📦 Installation
 
-### Standard Installation (Recommended)
+### Automatic Installation with Plugin Updater (Recommended)
 
-1. Close GOG Galaxy completely.
-2. Download the latest release from this repository.
-3. Open the following folder:
+Use the [melcom GOG Galaxy Plugin Updater](https://github.com/melcom-creations/galaxy-integrations-64bit/tree/main/tools/melcom-galaxy_plugin_updater) to install or update the integration automatically.
+
+1. Download and extract the Plugin Updater.
+2. Double-click `update-plugins.bat`.
+3. Select your preferred language.
+4. Follow the displayed instructions.
+
+When installing the Steam integration, the updater can also offer optional automatic startup support for [Steam Achievement Notifier](https://github.com/SteamAchievementNotifier/SteamAchievementNotifier).
+
+### Manual Installation
+
+1. Close GOG Galaxy completely, including the system tray application.
+2. Download the latest release package from this repository.
+3. Extract the ZIP archive directly into:
 
 ```text
 %localappdata%\GOG.com\Galaxy\plugins\installed\
 ```
 
-1. Extract the ZIP archive **directly into this folder**.
-
-The resulting directory structure **must** look like this:
+The resulting directory structure must look like this:
 
 ```text
 %localappdata%\GOG.com\Galaxy\plugins\installed\
@@ -41,68 +48,95 @@ The resulting directory structure **must** look like this:
     └── ...
 ```
 
-1. Start GOG Galaxy.
+4. Continue with **First Start and Initial Sync** below.
+
+> [!IMPORTANT]
+> Do not place backup copies of this plugin inside the `plugins\installed` directory. GOG Galaxy scans every folder inside this directory during startup, so duplicate plugin folders can cause GUID conflicts or load an outdated version.
 
 ---
 
-## 🔄 Resetting the Plugin Database (Recommended)
+## 🚀 First Start and Initial Sync
 
-If the plugin behaves unexpectedly after an update, resetting the local plugin database is recommended.
+For the first synchronization after installing or updating the plugin:
 
-1. Open `C:\ProgramData\GOG.com\Galaxy\storage\plugins\` and find the files starting with `steam_` and ending in `-storage.db`.
-2. Rename each by appending `.old` (e.g. `steam_xxxxxxxxx-storage.db` -> `steam_xxxxxxxxx-storage.db.old`).
-3. Start GOG Galaxy again and reconnect the Steam integration if necessary.
-
-### 🚀 First Start and Initial Sync (Important)
-
-For a clean first run after installing or updating the plugin:
-
-1. Close GOG Galaxy.
-2. Open this folder:
-
-```text
-C:\ProgramData\GOG.com\Galaxy\storage\plugins\
-```
-
-1. If a `steam_...-storage.db` file exists there, delete it.
+1. Start Steam and keep it open.
 2. Start GOG Galaxy.
-3. Start Steam and keep it open.
-4. In GOG Galaxy, open the account menu (top-right) and click **Sync integrations**.
-5. Wait until sync finishes.
-
----
-
-## ⚠️ Important
-
-Do **not** place backup copies of this plugin inside the `plugins\installed` directory.
-
-GOG Galaxy scans every folder inside this directory during startup. Duplicate plugin folders can lead to GUID conflicts or cause Galaxy to load an outdated version of the plugin.
+3. Connect the Steam integration through **Settings -> Integrations** if necessary.
+4. Open the account menu in the top-right corner and select **Sync integrations**.
+5. Wait until the synchronization has finished.
 
 ---
 
 ## ⚠️ Known Limitation
 
-### Achievement metadata depends on GOG Galaxy servers
+### Achievement Metadata Depends on GOG Galaxy Servers
 
-The Steam integration can import and sync unlocked achievements, but achievement metadata (such as names, descriptions, icons, and total counts) is provided by GOG Galaxy backend services.
+The Steam integration can import and sync unlocked achievements, but achievement metadata such as names, descriptions, icons, and total counts is provided by GOG Galaxy backend services.
 
-If GOG has not yet updated this metadata for newer DLCs or game updates, achievements may not immediately appear correctly in the Galaxy UI even when the plugin import itself has already completed.
+If GOG has not yet updated this metadata for newer DLCs or game updates, achievements may not immediately appear correctly in the Galaxy interface even when the plugin import has completed successfully.
 
-In this case, no further plugin action is usually required. The display updates once GOG Galaxy metadata is refreshed server-side.
+No plugin action is usually required. The display updates after GOG refreshes the achievement metadata on its servers.
+
+---
+
+## 🔄 Resetting the Plugin Database (Troubleshooting)
+
+Reset the local plugin database if synchronization problems continue after restarting both applications.
+
+1. Close GOG Galaxy completely.
+2. Open `C:\ProgramData\GOG.com\Galaxy\storage\plugins\`.
+3. Find every file starting with `steam_` and ending in `-storage.db`.
+4. Rename each matching file by appending `.old`, for example:
+
+   `steam_xxxxxxxxx-storage.db` -> `steam_xxxxxxxxx-storage.db.old`
+
+5. Start Steam and keep it open.
+6. Start GOG Galaxy, reconnect the integration if necessary, select **Sync integrations** from the account menu, and wait for synchronization to finish.
+
+---
+
+## 🛠️ What to Do If the Plugin Has Problems
+
+If the database reset above does not resolve the problem, create a clean session with fresh diagnostic files before contacting me. The reset procedure preserves the previous database as a `.old` file; the steps below remove the active database so the issue can be reproduced from a clean state.
+
+1. Close GOG Galaxy completely, including the system tray application.
+2. Open the following directory and delete the existing log files:
+
+   ```text
+   %ProgramData%\GOG.com\Galaxy\logs
+   ```
+
+3. Open the plugin storage directory:
+
+   ```text
+   C:\ProgramData\GOG.com\Galaxy\storage\plugins
+   ```
+
+   Delete only the active Steam database file starting with `steam_` and ending in `-storage.db`. Do not delete database files belonging to other integrations. If you are unsure which file is correct, do not delete anything from this directory.
+4. Start Steam and keep it open. Start GOG Galaxy, reproduce the problem, and then close GOG Galaxy completely so the new log is fully written.
+5. Return to the logs directory and locate the newly created Steam plugin log:
+
+   ```text
+   plugin-steam-ca27391f-2675-49b1-92c0-896d43afa4f8.log
+   ```
+
+Send only this log file, not the entire logs folder. Include the exact steps taken, the expected and actual result, and whether the problem can be reproduced.
+
+Without a fresh plugin log and a detailed description, I cannot reliably determine what is causing the problem. Once everything is ready, continue with [Support & Feedback](#-support--feedback) for contact options.
 
 ---
 
 ## 🙏 Credits
 
-**Original Community Integration**
-Friends of Galaxy
-[https://github.com/FriendsOfGalaxy/galaxy-integration-steam](https://github.com/FriendsOfGalaxy/galaxy-integration-steam)
+**Original Community Integration**  
+Friends of Galaxy  
+[Friends of Galaxy Steam integration](https://github.com/FriendsOfGalaxy/galaxy-integration-steam)
 
-**Authorization Flow Contributions**
-ABaumher
-[https://github.com/ABaumher](https://github.com/ABaumher)
+**Authorization Flow Contributions**  
+ABaumher  
+[ABaumher on GitHub](https://github.com/ABaumher)
 
-**64-bit Port, Maintenance and Improvements**
+**64-bit Port, Maintenance and Improvements**  
 melcom
 
 ---
@@ -111,14 +145,14 @@ melcom
 
 This integration is based on and inspired by several open-source projects and community resources.
 
-* [https://github.com/SteamRE/SteamKit](https://github.com/SteamRE/SteamKit)
-* [https://github.com/ValuePython/steam](https://github.com/ValuePython/steam)
-* [https://github.com/prncc/steam-scraper](https://github.com/prncc/steam-scraper)
-* [https://github.com/rhaarm/steam-scraper](https://github.com/rhaarm/steam-scraper)
-* [https://github.com/mulhod/steam_reviews](https://github.com/mulhod/steam_reviews)
-* [https://github.com/summersb92/aeolipile](https://github.com/summersb92/aeolipile)
-* [https://github.com/rcpoison/steam-scraper](https://github.com/rcpoison/steam-scraper)
-* [https://github.com/chmccc/steam-scraper](https://github.com/chmccc/steam-scraper)
+* [SteamKit](https://github.com/SteamRE/SteamKit)
+* [ValuePython/steam](https://github.com/ValuePython/steam)
+* [prncc/steam-scraper](https://github.com/prncc/steam-scraper)
+* [rhaarm/steam-scraper](https://github.com/rhaarm/steam-scraper)
+* [mulhod/steam_reviews](https://github.com/mulhod/steam_reviews)
+* [summersb92/aeolipile](https://github.com/summersb92/aeolipile)
+* [rcpoison/steam-scraper](https://github.com/rcpoison/steam-scraper)
+* [chmccc/steam-scraper](https://github.com/chmccc/steam-scraper)
 
 ---
 
@@ -140,12 +174,12 @@ Thank you all for having my back!
 
 ## 🤝 Support & Feedback
 
-This project is developed and maintained by one person. Response times may vary, especially during periods when health-related limitations reduce available development time.
+**GitHub Issues are intentionally disabled.** Health-related limitations prevent me from reliably managing separate issue trackers across all of my plugin repositories.
 
-**GitHub Issues are intentionally disabled.**
+Before contacting me, follow **What to Do If the Plugin Has Problems** and prepare a fresh Steam plugin log with a detailed description.
 
-If you would like to report a bug or suggest an improvement, please use the contact form on my website:
+* **GOG:** Send me a message or add me as a friend through my [GOG profile](https://www.gog.com/u/melcom).
+* **Email:** `melcom @ gmx.net`
+* **Discord:** `.melcom` - the leading dot is part of the username. You can send me a message or add me as a friend.
 
-📩 [https://melcom-creations.github.io/melcom-music/contact.html](https://melcom-creations.github.io/melcom-music/contact.html)
-
-Thank you for your patience and support!
+Logs can be attached directly or shared through Dropbox or OneDrive. Response times may vary depending on my health and available development time. Thank you for your understanding.
