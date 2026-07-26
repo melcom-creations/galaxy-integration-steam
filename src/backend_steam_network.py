@@ -15,6 +15,7 @@ from galaxy.api.errors import (
     BackendTimeout,
 )
 from galaxy.api.types import (
+    Dlc,
     Game,
     LicenseInfo,
     LicenseType,
@@ -44,6 +45,7 @@ from steam_network.times_cache import TimesCache
 from steam_network.user_info_cache import UserInfoCache
 from steam_network.websocket_client import WebSocketClient
 from steam_network.websocket_list import WebSocketList
+from steam_network.title_overrides import get_display_title
 from steam_network.w3_hack import (
     WITCHER_3_DLCS_APP_IDS,
     WITCHER_3_GOTY_APP_ID,
@@ -133,6 +135,7 @@ class SteamNetworkBackend(BackendInterface):
 
         self._update_owned_games_task : Task[None] = asyncio.create_task(asyncio.sleep(0))
         self._owned_games_parsed : bool = False
+        self._dlc_ids_by_parent: Dict[str, List[str]] = {}
 
         self._load_persistent_cache()
 
@@ -404,6 +407,23 @@ class SteamNetworkBackend(BackendInterface):
         owned_games = []
         seen_app_ids = set()
         owned_witcher_3_dlcs = set()
+        dlcs_by_parent: Dict[str, Dict[str, Dlc]] = {}
+
+        async for app in self._games_cache.get_dlcs():
+            if app.parent is None:
+                continue
+            parent_id = normalize_app_id(app.parent)
+            dlc_id = normalize_app_id(app.appid)
+            dlcs_by_parent.setdefault(parent_id, {})[dlc_id] = Dlc(
+                dlc_id,
+                app.title,
+                LicenseInfo(LicenseType.SinglePurchase, None),
+            )
+
+        self._dlc_ids_by_parent = {
+            parent_id: list(dlcs)
+            for parent_id, dlcs in dlcs_by_parent.items()
+        }
 
         try:
             async for app in self._games_cache.get_owned_games():
@@ -414,8 +434,8 @@ class SteamNetworkBackend(BackendInterface):
                 owned_games.append(
                     Game(
                         normalized_app_id,
-                        app.title,
-                        [],
+                        get_display_title(normalized_app_id, app.title),
+                        list(dlcs_by_parent.get(normalized_app_id, {}).values()),
                         LicenseInfo(LicenseType.SinglePurchase, None),
                     )
                 )
@@ -468,7 +488,7 @@ class SteamNetworkBackend(BackendInterface):
             if normalized_app_id in seen_app_ids:
                 continue
             seen_app_ids.add(normalized_app_id)
-            games.append(SubscriptionGame(game_id=normalized_app_id, game_title=game.title))
+            games.append(SubscriptionGame(game_id=normalized_app_id, game_title=get_display_title(normalized_app_id, game.title)))
         yield games
 
     async def prepare_achievements_context(self, game_ids: List[str]) -> Any:
@@ -476,14 +496,22 @@ class SteamNetworkBackend(BackendInterface):
             raise AuthenticationRequired()
 
         requested_games_count = len(game_ids)
+        achievement_game_ids = list(dict.fromkeys(
+            normalize_app_id(game_id)
+            for game_id in game_ids
+        ))
+        for game_id in achievement_game_ids.copy():
+            achievement_game_ids.extend(self._dlc_ids_by_parent.get(game_id, []))
+        achievement_game_ids = list(dict.fromkeys(achievement_game_ids))
         logger.info(
-            "Preparing achievements context for %d game(s)",
+            "Preparing achievements context for %d game(s), including %d DLC app(s)",
             requested_games_count,
+            len(achievement_game_ids) - len(set(map(normalize_app_id, game_ids))),
         )
 
         try:
             if not self._stats_cache.import_in_progress:
-                await self._websocket_client.refresh_game_stats(game_ids.copy())
+                await self._websocket_client.refresh_game_stats(achievement_game_ids)
             else:
                 logger.info(
                     "Game stats import already in progress (%d game(s) pending)",
@@ -515,20 +543,41 @@ class SteamNetworkBackend(BackendInterface):
 
     async def get_unlocked_achievements(self, game_id: str, context: Any) -> List[Achievement]:
         logger.info(f"Asked for achievs for {game_id}")
-        game_stats = self._stats_cache.get(game_id)
         achievements = []
+        seen_achievement_ids = set()
+        seen_achievement_names = set()
+
+        normalized_game_id = normalize_app_id(game_id)
+        game_stats = self._stats_cache.get(normalized_game_id)
         if game_stats and "achievements" in game_stats:
             for achievement in game_stats["achievements"]:
-                # Trim trailing whitespace so achievement names match the website data.
-                achievement_name = achievement["name"]
-                achievement_name = achievement_name.strip()
-                if not achievement_name:
-                    achievement_name = achievement["name"]
-
+                achievement_id = str(achievement["id"])
+                achievement_name = achievement["name"].strip() or achievement["name"]
+                if achievement_id in seen_achievement_ids:
+                    continue
+                seen_achievement_ids.add(achievement_id)
+                seen_achievement_names.add(achievement_name.casefold())
                 achievements.append(
                     Achievement(
                         achievement["unlock_time"],
-                        achievement_id=None,
+                        achievement_id=achievement_id,
+                        achievement_name=achievement_name,
+                    )
+                )
+
+        for dlc_id in self._dlc_ids_by_parent.get(normalized_game_id, []):
+            dlc_stats = self._stats_cache.get(dlc_id)
+            if not dlc_stats or "achievements" not in dlc_stats:
+                continue
+            for achievement in dlc_stats["achievements"]:
+                achievement_name = achievement["name"].strip() or achievement["name"]
+                normalized_name = achievement_name.casefold()
+                if normalized_name in seen_achievement_names:
+                    continue
+                seen_achievement_names.add(normalized_name)
+                achievements.append(
+                    Achievement(
+                        achievement["unlock_time"],
                         achievement_name=achievement_name,
                     )
                 )

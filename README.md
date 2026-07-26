@@ -7,10 +7,12 @@ This plugin imports your Steam library into GOG Galaxy 2.1+ 64-bit. Based on the
 ## ✨ Features
 
 * Imports your owned Steam games into GOG Galaxy
-* Syncs achievements and game time
+* Links owned DLCs to their parent games
+* Syncs base-game and DLC achievements through Steam's current Player service
+* Syncs game time
 * Detects locally installed Steam games
 * Launches, installs, and uninstalls games through Steam
-* Includes improved handling for large Steam libraries
+* Processes large Steam license sets in bounded batches
 
 > [!NOTE]
 > macOS compatibility may be technically possible, but it is currently untested because I do not have access to a Mac. If you use macOS and would like to help test the integration, feel free to contact me.
