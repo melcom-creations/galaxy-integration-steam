@@ -4,6 +4,17 @@ All notable changes to this plugin will be documented in this file.
 
 ---
 
+## Version 2.1.10-64bit
+
+- **Steam Family Sharing import fixed:** The subscription-games entry point now returns the backend's asynchronous generator from an awaitable method, as required by the bundled Galaxy importer. This fixes `TypeError: object async_generator can't be used in 'await' expression` when importing shared games. Existing game selection, AppID normalization, and duplicate filtering are retained.
+- **Correct Steam achievement identifiers:** Galaxy now receives the achievement's public API name (`internal_name`). The numeric `internal_key` is used only to join Steam's user and schema responses. For example, Starfield's "The Promised, Broken" is exported as `52`, not `1043`.
+- **Safe name fallback:** If Steam omits the API name, achievements with a display name are exported by name. Missing identifiers are not converted to the literal string `None` or collapsed into a single achievement.
+- **Achievement diagnostics:** Each completed response pair logs schema, user-entry, export, name-fallback, and missing-schema counts. Unlocked entries without a usable schema produce a warning.
+- **Scope:** This corrects unlocked-achievement mapping. It does not create missing entries in Galaxy's achievement catalog or guarantee an updated total achievement count. DLC aggregation and unlock timestamps are retained.
+- **Hidden-games filter mismatch fixed:** Steam's Cloud Config Store can return tombstoned (deleted) collection entries whose payload still contains their last known content. These were previously merged into the plugin's live collection state the same as active entries, which could resurface a game as hidden (or in a custom collection) after it had actually been unhidden or removed on Steam. Deleted entries are now skipped during processing.
+
+---
+
 ## Version 2.1.9-64bit
 
 ### Overview for Version 2.1.9-64bit

@@ -551,11 +551,15 @@ class SteamNetworkBackend(BackendInterface):
         game_stats = self._stats_cache.get(normalized_game_id)
         if game_stats and "achievements" in game_stats:
             for achievement in game_stats["achievements"]:
-                achievement_id = str(achievement["id"])
+                raw_achievement_id = achievement.get("id")
+                achievement_id = str(raw_achievement_id) if raw_achievement_id is not None else None
                 achievement_name = achievement["name"].strip() or achievement["name"]
-                if achievement_id in seen_achievement_ids:
+                if achievement_id is not None:
+                    if achievement_id in seen_achievement_ids:
+                        continue
+                    seen_achievement_ids.add(achievement_id)
+                elif achievement_name.casefold() in seen_achievement_names:
                     continue
-                seen_achievement_ids.add(achievement_id)
                 seen_achievement_names.add(achievement_name.casefold())
                 achievements.append(
                     Achievement(

@@ -165,8 +165,8 @@ class SteamPlugin(Plugin):
     async def get_subscription_games(
         self, subscription_name: str, context: Any
     ) -> AsyncGenerator[List[SubscriptionGame], None]:
-        async for hunk in self._backend.get_subscription_games(subscription_name, context):
-            yield hunk
+        # Galaxy's CollectionImporter awaits this call, then iterates its result.
+        return self._backend.get_subscription_games(subscription_name, context)
 
     async def prepare_achievements_context(self, game_ids: List[str]) -> Any:
         return await self._backend.prepare_achievements_context(game_ids)
