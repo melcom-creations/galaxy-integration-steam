@@ -4,6 +4,17 @@ All notable changes to this plugin will be documented in this file.
 
 ---
 
+## Version 2.1.11-64bit
+
+- **Steam connection cleanup:** The receive loop now owns its WebSocket receive operation directly. Shutdown stops the loop even while it is processing a packet, and waits for its receive, heartbeat, and achievement timeout tasks to finish.
+- **Authentication task cleanup:** Connection cancellation and protocol completion now cancel and await all session tasks. Network-error retries close the previous connection before reconnecting.
+- **Scope:** These changes address connection task lifecycle defects found while investigating a concurrent WebSocket receive error. They do not change Galaxy's achievement catalog, upload filtering, or Activity Feed generation. Live verification is pending.
+- **Development version:** Remain on 2.1.11-64bit until the maintainer explicitly requests another version change.
+
+**Special thanks to our longtime friend [Hustlefan](https://www.gog.com/u/Hustlefan)** for sharing his detailed logs and observations. While investigating delayed achievements, his logs revealed a separate Steam connection error that led us to find and fix several connection cleanup issues.
+
+---
+
 ## Version 2.1.10-64bit
 
 - **Steam Family Sharing import fixed:** The subscription-games entry point now returns the backend's asynchronous generator from an awaitable method, as required by the bundled Galaxy importer. This fixes `TypeError: object async_generator can't be used in 'await' expression` when importing shared games. Existing game selection, AppID normalization, and duplicate filtering are retained.
