@@ -529,7 +529,10 @@ class SteamNetworkBackend(BackendInterface):
                     "Current call will continue with partial data and next import can retry.",
                     pending_count,
                 )
-                self._stats_cache.abort_game_stats_import()
+                try:
+                    await self._websocket_client.cancel_game_stats_import()
+                finally:
+                    self._stats_cache.abort_game_stats_import()
             else:
                 logger.info("Finished achievements context prepare")
         except asyncio.CancelledError:
@@ -538,7 +541,10 @@ class SteamNetworkBackend(BackendInterface):
                 "Achievements context preparation aborted (%d game(s) still pending)",
                 pending_count,
             )
-            self._stats_cache.abort_game_stats_import()
+            try:
+                await self._websocket_client.cancel_game_stats_import()
+            finally:
+                self._stats_cache.abort_game_stats_import()
             raise
 
     async def get_unlocked_achievements(self, game_id: str, context: Any) -> List[Achievement]:
@@ -549,6 +555,10 @@ class SteamNetworkBackend(BackendInterface):
 
         normalized_game_id = normalize_app_id(game_id)
         game_stats = self._stats_cache.get(normalized_game_id)
+        if self._stats_cache.game_stats_import_failed(normalized_game_id) and not (
+            game_stats is not None and "achievements" in game_stats
+        ):
+            raise BackendTimeout()
         if game_stats and "achievements" in game_stats:
             for achievement in game_stats["achievements"]:
                 raw_achievement_id = achievement.get("id")

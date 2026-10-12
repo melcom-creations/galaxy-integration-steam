@@ -4,12 +4,29 @@ All notable changes to this plugin will be documented in this file.
 
 ---
 
+## Version 2.1.12-64bit
+
+### Added for Version 2.1.12-64bit
+
+- **Automatic achievement retries:** Missing or unsuccessful Steam achievement responses are retried automatically, with up to three attempts per AppID and a delay between attempts. Completed parts of a response pair are retained. Responses are matched to their request IDs, and unsuccessful service responses cannot overwrite confirmed achievements with empty data. Aborted imports cancel outstanding achievement requests and retries before another import begins.
+
+### Fixed for Version 2.1.12-64bit
+
+- **Import startup fixed:** Achievement and game-time imports now acknowledge Galaxy's start request immediately while Steam data is retrieved in the background. Large libraries no longer hold this request open for several minutes.
+- **Steam request scheduling fixed:** The achievement request limit now tracks unfinished response pairs. Completed or timed-out pairs release their slots, and game-time and collection requests are prioritized so they do not wait behind the achievement queue.
+
+### Changed for Version 2.1.12-64bit
+
+- **Achievement timeout handling improved:** Missing Steam responses retain previously confirmed achievements for the current session. Games without confirmed data report an import timeout instead of a successful empty achievement list. Valid empty responses still synchronize normally.
+
+---
+
 ## Version 2.1.11-64bit
+
+### Fixed for Version 2.1.11-64bit
 
 - **Steam connection cleanup:** The receive loop now owns its WebSocket receive operation directly. Shutdown stops the loop even while it is processing a packet, and waits for its receive, heartbeat, and achievement timeout tasks to finish.
 - **Authentication task cleanup:** Connection cancellation and protocol completion now cancel and await all session tasks. Network-error retries close the previous connection before reconnecting.
-- **Scope:** These changes address connection task lifecycle defects found while investigating a concurrent WebSocket receive error. They do not change Galaxy's achievement catalog, upload filtering, or Activity Feed generation. Live verification is pending.
-- **Development version:** Remain on 2.1.11-64bit until the maintainer explicitly requests another version change.
 
 **Special thanks to our longtime friend [Hustlefan](https://www.gog.com/u/Hustlefan)** for sharing his detailed logs and observations. While investigating delayed achievements, his logs revealed a separate Steam connection error that led us to find and fix several connection cleanup issues.
 
@@ -17,12 +34,18 @@ All notable changes to this plugin will be documented in this file.
 
 ## Version 2.1.10-64bit
 
+### Added for Version 2.1.10-64bit
+
+- **Achievement diagnostics:** Each completed response pair logs schema, user-entry, export, name-fallback, and missing-schema counts. Unlocked entries without a usable schema produce a warning.
+
+### Fixed for Version 2.1.10-64bit
+
 - **Steam Family Sharing import fixed:** The subscription-games entry point now returns the backend's asynchronous generator from an awaitable method, as required by the bundled Galaxy importer. This fixes `TypeError: object async_generator can't be used in 'await' expression` when importing shared games. Existing game selection, AppID normalization, and duplicate filtering are retained.
 - **Correct Steam achievement identifiers:** Galaxy now receives the achievement's public API name (`internal_name`). The numeric `internal_key` is used only to join Steam's user and schema responses. For example, Starfield's "The Promised, Broken" is exported as `52`, not `1043`.
 - **Safe name fallback:** If Steam omits the API name, achievements with a display name are exported by name. Missing identifiers are not converted to the literal string `None` or collapsed into a single achievement.
-- **Achievement diagnostics:** Each completed response pair logs schema, user-entry, export, name-fallback, and missing-schema counts. Unlocked entries without a usable schema produce a warning.
-- **Scope:** This corrects unlocked-achievement mapping. It does not create missing entries in Galaxy's achievement catalog or guarantee an updated total achievement count. DLC aggregation and unlock timestamps are retained.
 - **Hidden-games filter mismatch fixed:** Steam's Cloud Config Store can return tombstoned (deleted) collection entries whose payload still contains their last known content. These were previously merged into the plugin's live collection state the same as active entries, which could resurface a game as hidden (or in a custom collection) after it had actually been unhidden or removed on Steam. Deleted entries are now skipped during processing.
+
+**Scope:** This corrects unlocked-achievement mapping. It does not create missing entries in Galaxy's achievement catalog or guarantee an updated total achievement count. DLC aggregation and unlock timestamps are retained.
 
 ---
 

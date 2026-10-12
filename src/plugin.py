@@ -169,15 +169,30 @@ class SteamPlugin(Plugin):
         return self._backend.get_subscription_games(subscription_name, context)
 
     async def prepare_achievements_context(self, game_ids: List[str]) -> Any:
-        return await self._backend.prepare_achievements_context(game_ids)
+        if not game_ids:
+            return None
+        # Import elements await Steam replies after the start RPC has returned.
+        return self._external_task_manager.create_task(
+            self._backend.prepare_achievements_context(game_ids),
+            "Steam achievements context", handle_exceptions=False,
+        )
 
     async def get_unlocked_achievements(self, game_id: str, context: Any) -> List[Achievement]:
+        if isinstance(context, asyncio.Future):
+            context = await asyncio.shield(context)
         return await self._backend.get_unlocked_achievements(game_id, context)
 
     async def prepare_game_times_context(self, game_ids: List[str]) -> Any:
-        return await self._backend.prepare_game_times_context(game_ids)
+        if not game_ids:
+            return None
+        return self._external_task_manager.create_task(
+            self._backend.prepare_game_times_context(game_ids),
+            "Steam game times context", handle_exceptions=False,
+        )
 
-    async def get_game_time(self, game_id: str, context: Dict[int, int]) -> GameTime:
+    async def get_game_time(self, game_id: str, context: Any) -> GameTime:
+        if isinstance(context, asyncio.Future):
+            context = await asyncio.shield(context)
         return await self._backend.get_game_time(game_id, context)
 
     async def prepare_game_library_settings_context(self, game_ids: List[str]) -> Any:

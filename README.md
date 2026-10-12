@@ -62,6 +62,8 @@ For the first synchronization after installing or updating the plugin:
 4. Open the account menu in the top-right corner and select **Sync integrations**.
 5. Wait until the synchronization has finished.
 
+Achievement and game-time imports run in the background. Large libraries can take several minutes to finish even after Galaxy accepts the synchronization request. Missing or unsuccessful Steam achievement responses are retried automatically, with up to three attempts per AppID. If those attempts fail, previously confirmed results from the current session are retained; games without confirmed data report an import timeout and can be retried with another synchronization.
+
 ## ⚠️ Known Limitations
 
 ### 🏆 Achievement Metadata Depends on GOG Galaxy Servers
