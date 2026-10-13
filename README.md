@@ -2,6 +2,10 @@
 
 This plugin imports your Steam library into GOG Galaxy 2.1+ 64-bit. Based on the original community integration, it has been updated for the current GOG Galaxy client and Python 3.13, with improved support for large libraries.
 
+> **☕ Optional support**
+>
+> This integration is free and will remain free. If you'd like to support my work, you're welcome to [☕ buy me a coffee through PayPal](https://paypal.me/melcom2630). Support is entirely optional and always appreciated.
+
 The steps below are for Windows. Dependencies are bundled; no separate Python installation is needed.
 
 [Installation](#-installation) | [First Start](#-first-start-and-initial-sync) | [Troubleshooting](#-troubleshooting) | [Support & Feedback](#-support--feedback)
