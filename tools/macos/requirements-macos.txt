@@ -1,0 +1,31 @@
+# Python packages bundled with the Steam plugin, pinned to the versions used by
+# the Windows release. On macOS the compiled parts (*.pyd on Windows) must be
+# replaced with CPython 3.13 wheels for the local architecture.
+#
+# galaxy-plugin-api also needs psutil on macOS.
+aiohappyeyeballs==2.7.1
+aiohttp==3.14.3
+aiosignal==1.4.0
+attrs==26.1.0
+certifi==2026.7.22
+cffi==2.1.0
+cryptography==49.0.0
+dataclasses-json==0.6.7
+frozenlist==1.8.0
+galaxy-plugin-api==0.71
+idna==3.18
+marshmallow==4.3.0
+multidict==6.7.1
+mypy-extensions==1.1.0
+packaging==26.2
+propcache==0.5.2
+protobuf==7.35.1
+psutil==7.2.2
+pyasn1==0.6.4
+pycparser==3.0
+rsa==4.9.1
+typing-extensions==4.16.0
+typing-inspect==0.9.0
+vdf==3.4
+websockets==16.1.1
+yarl==1.24.5
