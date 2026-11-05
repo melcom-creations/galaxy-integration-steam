@@ -4,6 +4,14 @@ All notable changes to this plugin will be documented in this file.
 
 ---
 
+## Unreleased
+
+### Added
+
+- **Achievement rarity tool:** Galaxy renders the "x% of players unlocked this" number from GOG's metadata, which stores `0.0` for many Steam games. `tools/fix-achievement-rarity.py` copies Steam's public global percentages into Galaxy's local database (backup, dry-run, re-runnable, never creates rows).
+
+---
+
 ## Version 2.1.12-64bit
 
 ### Added for Version 2.1.12-64bit

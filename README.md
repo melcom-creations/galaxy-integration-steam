@@ -78,6 +78,18 @@ If GOG has not yet updated this metadata for newer DLCs or game updates, achieve
 
 No plugin action is usually required. The display updates after GOG refreshes the achievement metadata on its servers.
 
+The same applies to the rarity percentage ("x% of players unlocked this"). Galaxy reads it from the `Achievements.rarity` column of its local database, which is filled from GOG metadata. For many Steam games GOG stores `0.0` there, so Galaxy shows `0.0%` although Valve publishes the real values. The plugin cannot influence this: the plugin API has no rarity/percentage field.
+
+If you want the real numbers, `tools/fix-achievement-rarity.py` copies Steam's public global percentages (`ISteamUserStats/GetGlobalAchievementPercentagesForApp`) into Galaxy's database:
+
+```sh
+# Galaxy must be closed; quit it completely, including the tray application
+tools/fix-achievement-rarity.py --dry-run   # show what would change
+tools/fix-achievement-rarity.py             # write (keeps a timestamped backup)
+```
+
+It only updates achievements that already exist for `steam_<appid>` releases, never creates or deletes rows, and can be re-run after GOG refreshes its metadata. Achievements stored in GOG's legacy `<index>¬Achievement¬<name>` key format cannot be matched to Steam API names and are reported as skipped.
+
 ## 🛠️ Troubleshooting
 
 Restart Galaxy and the store app and try one synchronization. If the problem remains, collect a fresh log. A database reset is not required for this.
