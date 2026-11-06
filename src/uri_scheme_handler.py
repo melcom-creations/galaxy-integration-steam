@@ -27,17 +27,21 @@ if platform.system().lower() == "windows":
 
 elif platform.system().lower() == "darwin":
 
-    from importlib import import_module
+    import os
+
+    # GOG Galaxy's bundled Python does not ship pyobjc, so AppKit /
+    # CoreServices cannot be imported. Steam registers the steam:// URL
+    # scheme when Steam.app is installed, so checking for the bundle is
+    # both sufficient and dependency-free.
+    _STEAM_APP_PATHS = (
+        "/Applications/Steam.app",
+        os.path.expanduser("~/Applications/Steam.app"),
+    )
 
     def _is_macos_uri_handler_installed(protocol):
-        launch_services = import_module("CoreServices.LaunchServices")
-        app_kit = import_module("AppKit")
-        LSCopyDefaultHandlerForURLScheme = launch_services.LSCopyDefaultHandlerForURLScheme
-        NSWorkspace = app_kit.NSWorkspace
-        bundle_id = LSCopyDefaultHandlerForURLScheme(protocol)
-        if not bundle_id:
+        if protocol != "steam":
             return False
-        return NSWorkspace.sharedWorkspace().absolutePathForAppBundleWithIdentifier_(bundle_id) is not None
+        return any(os.path.isdir(path) for path in _STEAM_APP_PATHS)
 
     is_uri_handler_installed = _is_macos_uri_handler_installed
 

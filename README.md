@@ -21,7 +21,7 @@ The steps below are for Windows. Dependencies are bundled; no separate Python in
 * Processes large Steam license sets in bounded batches
 
 > [!NOTE]
-> macOS compatibility may be technically possible, but it is currently untested because I do not have access to a Mac. If you use macOS and would like to help test the integration, feel free to contact me.
+> macOS is supported by this fork through a separate build step, see [macOS](#-macos). Feedback from macOS users is still welcome.
 
 ## 📦 Installation
 
@@ -55,6 +55,36 @@ Place `manifest.json` directly inside this folder, without an extra nested plugi
 > Do not place backup copies of this plugin inside the `plugins\installed` directory. GOG Galaxy scans every folder inside this directory during startup, so duplicate plugin folders can cause GUID conflicts or load an outdated version.
 
 **Next step:** Continue with [First Start and Initial Sync](#-first-start-and-initial-sync).
+
+### 🍎 macOS
+
+The Windows release cannot be used on macOS: its `modules` folder contains `*.pyd` files (Windows binaries), and Steam for macOS does not write the registry data the plugin previously used to detect installed games. `tools/macos/build_plugin.py` produces a working bundle by taking the current release, replacing its dependencies with macOS wheels built for the CPython 3.13 that GOG Galaxy ships, and applying the macOS fixes from `src/`.
+
+Requirements: macOS on Apple silicon or Intel, GOG Galaxy 2.1+ in `/Applications`, Steam installed, and [uv](https://docs.astral.sh/uv/) (recommended) or `pip`.
+
+```sh
+git clone https://github.com/melcom-creations/galaxy-integration-steam.git
+cd galaxy-integration-steam
+tools/macos/build_plugin.py --install
+```
+
+The script:
+
+* downloads the latest release ZIP (or uses `--release-zip` / `--release-dir`);
+* installs macOS wheels (`tools/macos/requirements-macos.txt`) into an empty staging folder and replaces the bundled packages with them, so the Windows `*.pyd` modules are gone for good — `uv` is used when available, `--installer pip` forces pip;
+* overwrites the bundled sources with the macOS-patched files from `src/`;
+* runs a verification import with GOG Galaxy's own Python and reports how many local games were found;
+* with `--install`, moves an existing installation to `plugins/steam_…backup-<timestamp>` (outside `plugins/installed`, to avoid GUID conflicts) and copies the new bundle in.
+
+Quit GOG Galaxy before installing, then follow [First Start and Initial Sync](#-first-start-and-initial-sync).
+
+macOS-specific behaviour:
+
+* local game states are derived from `appmanifest_*.acf` files instead of `registry.vdf`;
+* the file monitor watches `registry.vdf`, `libraryfolders.vdf` and every `appmanifest_*.acf`;
+* the `steam://` handler check relies on the presence of `/Applications/Steam.app` instead of pyobjc.
+
+Note that GOG Galaxy's own "install integration" flow downloads the upstream macOS package, which does not contain these fixes - install with the script and do not reinstall the integration through the UI.
 
 ## 🚀 First Start and Initial Sync
 

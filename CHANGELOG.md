@@ -4,6 +4,23 @@ All notable changes to this plugin will be documented in this file.
 
 ---
 
+## Unreleased
+
+### Added
+
+- **macOS support:** the Windows release bundle cannot run on macOS because its `modules` folder contains `*.pyd` files. `tools/macos/build_plugin.py` builds a macOS bundle from the same release by installing CPython 3.13 macOS wheels for GOG Galaxy's bundled interpreter, applying the fixed sources, verifying the imports and installing the result (old installation is moved to a timestamped backup outside `plugins/installed`).
+
+### Fixed
+
+- **Local games on macOS:** Steam for macOS no longer writes the `Apps` subtree into `registry.vdf`, so the integration reported zero installed games. Local states are now derived from `appmanifest_*.acf` (`StateFlags`) on macOS, with registry data merged in when present. Windows still uses the registry.
+- **Local game monitoring on macOS:** the registry monitor watched only `registry.vdf`. A new file monitor tracks `registry.vdf`, `libraryfolders.vdf` and every `appmanifest_*.acf`, so installs, uninstalls and the running flag are noticed.
+
+### Changed
+
+- **macOS URI handler check:** GOG Galaxy's Python does not ship pyobjc, so `CoreServices`/`AppKit` imports failed. The check now verifies that `Steam.app` is present instead, without native dependencies.
+
+---
+
 ## Version 2.1.12-64bit
 
 ### Added for Version 2.1.12-64bit

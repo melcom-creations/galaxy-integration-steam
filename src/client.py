@@ -123,8 +123,11 @@ elif platform.system().lower() == "darwin":
 
         try:
             return registry["Registry"]["HKCU"]["Software"]["Valve"]["Steam"]["Apps"]
-        except KeyError:
-            logger.exception("Failed to parse Steam registry")
+        except (KeyError, TypeError):
+            # Current Steam for macOS does not write the "Apps" subtree at all,
+            # so the per-app "installed"/"running" flags are simply not there.
+            # That is expected; local_games_list() falls back to appmanifest.acf.
+            logger.debug("Steam registry has no Apps key; using app manifests instead")
             return {}
 
     registry_apps_as_dict = _macos_registry_apps_as_dict
@@ -152,6 +155,43 @@ def get_app_states_from_registry(app_dict):
     return app_states
 
 
+def get_app_states_from_manifests(library_folders: Iterable[str]) -> Dict[str, LocalGameState]:
+    """Build local game states from appmanifest_*.acf files.
+
+    Windows keeps the authoritative "installed"/"running" flags in the
+    registry, but Steam for macOS does not populate the registry "Apps"
+    subtree anymore. The app manifests are present on every platform and
+    carry the same information in their ``StateFlags`` field.
+    """
+    app_states: Dict[str, LocalGameState] = {}
+    for manifest_path in get_app_manifests(library_folders):
+        if not os.path.basename(manifest_path).startswith("appmanifest_"):
+            # The glob also matches other *.acf files that are not app manifests.
+            continue
+        app_id = app_id_from_manifest_path(manifest_path)
+        if not app_id or not app_id.isdigit():
+            continue
+
+        state = LocalGameState.None_
+        try:
+            app_state = load_vdf(manifest_path)["AppState"]
+            state_flags = StateFlags(int(app_state["StateFlags"]))
+            if StateFlags.Uninstalled in state_flags and StateFlags.FullyInstalled not in state_flags:
+                continue
+            state |= LocalGameState.Installed
+            if StateFlags.AppRunning in state_flags:
+                state |= LocalGameState.Running
+        except (OSError, SyntaxError, KeyError, ValueError):
+            # A manifest without readable StateFlags still means the game is
+            # present in the library, so report it as installed.
+            logger.debug("Cannot parse state flags from %s", manifest_path)
+            state |= LocalGameState.Installed
+
+        normalized_app_id = normalize_app_id(app_id)
+        app_states[normalized_app_id] = app_states.get(normalized_app_id, LocalGameState.None_) | state
+    return app_states
+
+
 def local_games_list():
     local_games = []
     seen_app_ids = set()
@@ -159,7 +199,15 @@ def local_games_list():
         library_folders = get_library_folders()
         logger.debug("Checking library folders: %s", str(library_folders))
         apps_ids = get_installed_games(library_folders)
-        app_states = get_app_states_from_registry(registry_apps_as_dict())
+        if platform.system().lower() == "darwin":
+            # registry.vdf has no "Apps" data on macOS, so appmanifest files
+            # are the primary source; merge in registry data when present.
+            app_states = get_app_states_from_manifests(library_folders)
+            registry_states = get_app_states_from_registry(registry_apps_as_dict())
+            for app_id, state in registry_states.items():
+                app_states[app_id] = app_states.get(app_id, LocalGameState.None_) | state
+        else:
+            app_states = get_app_states_from_registry(registry_apps_as_dict())
         for app_id in apps_ids:
             if app_id in seen_app_ids:
                 continue
