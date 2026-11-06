@@ -17,8 +17,11 @@ published upstream is an older release - mixing them fails at the
 verification step, so prefer the ``*-64bit.zip`` of the same version.
 
 Run it on the Mac that will run GOG Galaxy, so the wheels match the
-architecture of the Galaxy application. ``uv`` is used when available,
-otherwise the script falls back to ``pip``.
+architecture of the Galaxy application. ``uv`` is used when available
+(``--installer pip`` forces pip), otherwise the script falls back to ``pip``.
+Wheels are always installed into an empty staging folder and then replace the
+bundled packages, so a Windows package that pip considers "already installed"
+still receives its macOS extension modules.
 
 Examples:
     tools/macos/build_plugin.py
@@ -105,32 +108,108 @@ def pip_platform_tag() -> str:
     return "macosx_10_15_x86_64"
 
 
-def install_wheels(modules_dir: Path, python_executable: Path):
+def select_installer(requested: str) -> str:
+    """Resolve the wheel installer: ``auto`` prefers uv, pip is the fallback."""
+    if requested == "uv":
+        if not shutil.which("uv"):
+            raise RuntimeError("--installer uv was requested, but uv is not on PATH")
+        return "uv"
+    if requested == "pip":
+        return "pip"
+    return "uv" if shutil.which("uv") else "pip"
+
+
+def pip_prefix() -> list:
+    """Return the pip command of the running interpreter.
+
+    Falling back to an arbitrary ``pip3`` from PATH is deliberately avoided: it
+    may belong to an older Python (for example the system 3.9) and then rejects
+    the pinned requirements, or builds wheels for the wrong interpreter.
+    """
+    prefix = [sys.executable, "-m", "pip"]
+    if subprocess.run(
+        [*prefix, "--version"],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    ).returncode != 0:
+        raise RuntimeError(
+            f"{sys.executable} has no pip module; install pip "
+            "(`python3 -m ensurepip --user`) or make uv available"
+        )
+    return prefix
+
+
+def installer_command(installer: str, target_dir: Path, python_executable: Path) -> list:
     requirements = read_requirements()
-    uv = shutil.which("uv")
-    if uv:
-        command = [
-            uv, "pip", "install",
+    if installer == "uv":
+        return [
+            shutil.which("uv"), "pip", "install",
             "--python", str(python_executable),
-            "--target", str(modules_dir),
+            "--target", str(target_dir),
             "--only-binary", ":all:",
             "--no-deps",
             *requirements,
         ]
-    else:
-        command = [
-            sys.executable, "-m", "pip", "install",
-            "--target", str(modules_dir),
-            "--only-binary=:all:",
-            "--no-deps",
-            "--implementation", "cp",
-            "--python-version", "3.13",
-            "--abi", "cp313",
-            "--platform", pip_platform_tag(),
-            *requirements,
-        ]
-    log("installing macOS wheels")
-    subprocess.run(command, check=True)
+    return [
+        *pip_prefix(), "install",
+        "--target", str(target_dir),
+        "--only-binary=:all:",
+        "--no-deps",
+        "--no-input",
+        "--no-compile",
+        "--disable-pip-version-check",
+        "--implementation", "cp",
+        "--python-version", "3.13",
+        "--abi", "cp313",
+        "--platform", pip_platform_tag(),
+        *requirements,
+    ]
+
+
+def replace_packages(staging_dir: Path, modules_dir: Path):
+    """Replace the bundled dependencies with the freshly installed ones.
+
+    Every top-level entry produced by the installer replaces the same entry in
+    ``modules`` as a whole, so files the new version no longer ships (Windows
+    ``*.pyd`` modules in particular) cannot survive, and modules that are not
+    part of the requirements (``steam_network``, ``commonWeb``) are untouched.
+    Installing straight into ``modules`` is not enough: pip treats requirements
+    whose ``*.dist-info`` is already there as satisfied and skips them, which
+    would leave the Windows packages without their macOS extensions.
+    """
+    for staged in sorted(staging_dir.iterdir()):
+        if staged.name == ".lock":
+            # uv drops a lock file into every --target directory it installs into.
+            continue
+        target = modules_dir / staged.name
+        if target.is_dir():
+            shutil.rmtree(target)
+        elif target.exists() or target.is_symlink():
+            target.unlink()
+        shutil.move(str(staged), str(target))
+
+
+def check_staged_wheels(staging_dir: Path):
+    windows_binaries = list(staging_dir.rglob("*.pyd")) + list(staging_dir.rglob("*.dll"))
+    if windows_binaries:
+        raise RuntimeError(
+            "the installer produced Windows binaries instead of macOS wheels: "
+            + ", ".join(str(path.relative_to(staging_dir)) for path in windows_binaries[:5])
+        )
+    if not any(staging_dir.rglob("*.so")):
+        raise RuntimeError("no macOS extension modules (*.so) were installed")
+
+
+def install_wheels(modules_dir: Path, python_executable: Path, installer: str = "auto"):
+    installer = select_installer(installer)
+    log(f"installing macOS wheels with {installer} into a staging folder")
+    staging_dir = Path(tempfile.mkdtemp(prefix="galaxy-steam-wheels-"))
+    try:
+        subprocess.run(installer_command(installer, staging_dir, python_executable), check=True)
+        check_staged_wheels(staging_dir)
+        replace_packages(staging_dir, modules_dir)
+        log("replaced bundled packages with macOS wheels")
+    finally:
+        shutil.rmtree(staging_dir, ignore_errors=True)
 
 
 def clean_windows_artifacts(output_dir: Path) -> bool:
@@ -143,6 +222,16 @@ def clean_windows_artifacts(output_dir: Path) -> bool:
     for cache in output_dir.rglob("__pycache__"):
         shutil.rmtree(cache, ignore_errors=True)
     return bool(pyd_files)
+
+
+def check_no_windows_binaries(output_dir: Path):
+    """Windows extension modules cannot be loaded on macOS - fail early."""
+    leftovers = sorted(path.relative_to(output_dir) for path in output_dir.rglob("*.pyd"))
+    if leftovers:
+        raise RuntimeError(
+            "the bundle still contains Windows extension modules: "
+            + ", ".join(str(path) for path in leftovers[:10])
+        )
 
 
 def copy_macos_sources(output_dir: Path):
@@ -191,6 +280,8 @@ def main():
     parser.add_argument("--python", type=Path, default=GALAXY_PYTHON,
                         help="GOG Galaxy's Python 3.13 interpreter")
     parser.add_argument("--skip-verify", action="store_true")
+    parser.add_argument("--installer", choices=("auto", "uv", "pip"), default="auto",
+                        help="wheel installer to use (default: uv when available, otherwise pip)")
     args = parser.parse_args()
 
     if platform.system() != "Darwin":
@@ -218,7 +309,8 @@ def main():
         was_windows_bundle = clean_windows_artifacts(args.output)
         copy_macos_sources(args.output)
         if was_windows_bundle:
-            install_wheels(args.output / "modules", args.python)
+            install_wheels(args.output / "modules", args.python, args.installer)
+            check_no_windows_binaries(args.output)
         else:
             log("bundle already contains macOS extension modules; keeping them")
 
@@ -232,6 +324,15 @@ def main():
         if not args.install:
             log("quit GOG Galaxy, then copy the folder into:")
             log(f"  {args.install_dir}")
+    except RuntimeError as error:
+        print(f"[build-macos] error: {error}", file=sys.stderr)
+        sys.exit(1)
+    except subprocess.CalledProcessError as error:
+        print(
+            f"[build-macos] error: {error.cmd[0]} failed with exit code {error.returncode}",
+            file=sys.stderr,
+        )
+        sys.exit(error.returncode or 1)
     finally:
         if temp_dir:
             shutil.rmtree(temp_dir, ignore_errors=True)

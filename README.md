@@ -71,7 +71,7 @@ tools/macos/build_plugin.py --install
 The script:
 
 * downloads the latest release ZIP (or uses `--release-zip` / `--release-dir`);
-* installs macOS wheels into `modules/` (`tools/macos/requirements-macos.txt`);
+* installs macOS wheels (`tools/macos/requirements-macos.txt`) into an empty staging folder and replaces the bundled packages with them, so the Windows `*.pyd` modules are gone for good — `uv` is used when available, `--installer pip` forces pip;
 * overwrites the bundled sources with the macOS-patched files from `src/`;
 * runs a verification import with GOG Galaxy's own Python and reports how many local games were found;
 * with `--install`, moves an existing installation to `plugins/steam_…backup-<timestamp>` (outside `plugins/installed`, to avoid GUID conflicts) and copies the new bundle in.
